@@ -16,7 +16,7 @@ clean:
 
 .PHONY: bochs
 bochs: master.img
-	bochs -q
+	bochs -q -debugger
 
 .PHONY: qemu
 qemu: master.img

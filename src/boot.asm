@@ -15,7 +15,7 @@ mov sp, 0x7c00
 mov si,booting
 call print
 
-; 读到内存的什么位置？
+; 读取内存存储的地方
 mov edi, 0x1000 
 ; 起始扇区
 mov ecx, 2
@@ -39,31 +39,37 @@ error:
 ret
 
 read_disk:
+    ; 保存现场
+    push ecx
+    push ax
+    push dx
+
+    ; 0x1f2: 指定读取或写入的扇区数
     mov dx, 0x1f2
     mov al, bl
     out dx, al
-
+    ; 0x1f3: lba地址的低8位
     inc dx
     mov al, cl
     out dx, al
-
-    inc dx
-    shr ecx, 8
-    mov al, cl
-    out dx, al
-
+    ; 0x1f4: lba地址的中8位
     inc dx
     shr ecx, 8
     mov al, cl
     out dx, al
-
+    ; 0x1f5: lba地址的高8位
+    inc dx
+    shr ecx, 8
+    mov al, cl
+    out dx, al
+    ; 0x1F6: 
     inc dx
     shr ecx, 8
     and cl, 0b1111
     mov al, 0b1110_0000
     or al, cl
     out dx, al
-
+    ; 0x1F7:读取扇区:0x20 写入扇区:0x30
     inc dx
     mov al, 0x20
     out dx, al
@@ -71,14 +77,19 @@ read_disk:
     xor ecx, ecx
     mov cl, bl
 
-    .read:
+    .read_sector:
         push cx
         call waits_disk
-        call .reads
+        call .read_a_sector
         pop cx
-        loop .read
+        loop .read_sector
+
+    ;恢复现场
+    pop dx
+    pop ax
+    pop ecx
 ret 
-    .reads:
+    .read_a_sector:
         mov dx, 0x1f0
         mov cx, 256
         .readw:
@@ -86,6 +97,18 @@ ret
             mov [edi], ax
             add edi, 2
             loop .readw
+    ret
+
+    ; 0x1F7:等待返回磁盘状态, 第 4 位为 1 表示硬盘准备好数据传输，第 7 位为 1 表示硬盘忙
+    waits_disk:
+        mov dx, 0x1f7
+        .check:
+            nop ;增加一个时钟周期, 同步读写
+            nop
+            in al, dx
+            and al, 0b1000_1000
+            cmp al, 0b0000_1000
+            jnz .check
     ret
 
 print:
@@ -98,13 +121,13 @@ print:
         inc si
         jmp .next
     .done:
-    ret
+ret
 
 error_message:
-    db "[miniOS] read loader error ...", 10, 13, 0 ;\r\n\0
+    db "[miniOS] load loader error.", 10, 13, 0 ;\r\n\0
 
 booting:
-    db "[miniOS] enter booting ...", 10, 13, 0 ;\r\n\0
+    db "[miniOS] enter booting.", 10, 13, 0 ;\r\n\0
 
 ; 填充 0
 times 510 - ($ - $$) db 0

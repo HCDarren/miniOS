@@ -1,2 +1,4 @@
-./vscode
-./src/build
+.vscode
+src/build
+src/*.DS_Store
+src/master.img

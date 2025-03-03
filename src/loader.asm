@@ -64,17 +64,16 @@ error:
 ret
 
 error_message:
-    db "loding error anix...", 10, 13, 0 ;\r\n\0
+    db "[miniOS] loader error.", 10, 13, 0 ;\r\n\0
 
 detect_memory_message:
-    db "detect memory success...", 10, 13, 0 ;\r\n\0
+    db "[miniOS] detect memory success.", 10, 13, 0 ;\r\n\0
 
 loader_message:
-    db "loader loading anix...", 10, 13, 0 ;\r\n\0
+    db "[miniOS] loader loading success.", 10, 13, 0 ;\r\n\0
 
 [bits 32]
 enter_protected_mode:
-    xchg bx, bx
     mov ax, data_selector
     mov ds, ax
     mov es, ax
