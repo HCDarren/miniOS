@@ -8,6 +8,8 @@
 《操作系统导论》  
 《深入理解计算机系统》  
 《TCP/IP详解》  
+《程序员的自我修养：链接、装载与库》  
+《Linux是怎样工作的》  
 《操作系统真象还原》  
 《30天自制操作系统》  
 《一个64位操作系统的设计与实现》  
@@ -15,9 +17,9 @@
 《Linux内核设计艺术》  
 《Linux内核深度解析》
 
-### 视频讲解
+### 视频资料
 [C++ 学习视频(未完成)](https://www.bilibili.com/video/BV1Ga4y1m79j)  
-操作系统视频后续输出...  
+操作系统视频后续补充...  
 [一个8位二进制CPU的设计和实现](https://www.bilibili.com/video/BV1aP4y1s7Vf)  
 [x86 汇编语言](https://www.bilibili.com/video/BV1b44y1k7mT)  
 [操作系统实现](https://www.bilibili.com/video/BV1gR4y1u7or)  
