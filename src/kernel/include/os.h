@@ -3,6 +3,10 @@
 
 #define OS_MAGIC 0x55aa
 
+typedef unsigned char u8;
+typedef unsigned short u16;
+typedef unsigned int u32;
+
 // 初始化内核
 void kernel_init();
 
