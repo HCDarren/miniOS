@@ -4,6 +4,8 @@ SRC:=.
 ENTRYPOINT:=0x10000
 
 CFLAGS:= -m32
+#去掉GCC的版本信息
+CFLAGS+= -Qn
 CFLAGS+= -fno-builtin
 CFLAGS+= -nostdinc
 CFLAGS+= -fno-pic
