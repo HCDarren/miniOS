@@ -1,13 +1,13 @@
 #include <os.h>
 #include <console.h>
-
-char message[] = "Hello Wolrd!\r\n";
+#include <printk.h>
+#include <stdarg.h>
 
 int os_magic = OS_MAGIC;
 
 void kernel_init(){
     console_init();
     for (int i = 0; i < 40; i++) {
-        console_write(message, sizeof(message) - 1);
+        printk("Hello Wolrd! %d : %s\r\n", i, "Darren");
     }
 }
