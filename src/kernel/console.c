@@ -22,7 +22,9 @@
 // 光标位置 - 低位  
 #define CRT_CURSOR_L 0xF    
 // 屏幕文本列数 
-#define CRT_WIDTH 80                      
+#define CRT_WIDTH 80  
+// 屏幕文本行数 
+#define CRT_HEIGHT 25                     
 // 光标位置
 static u16 cursor_position;
 // 当前显卡的显示位置
@@ -33,17 +35,68 @@ static void set_cursor_position() {
     outb(CRT_ADDR_REG, CRT_CURSOR_H); 
     u8 cursor_h = cursor_position >> 8;
     outb(CRT_DATA_REG, cursor_h);
+
     outb(CRT_ADDR_REG, CRT_CURSOR_L); 
     u8 cursor_l = cursor_position;
     outb(CRT_DATA_REG, cursor_l);
 }
 
-// 设置显卡内存开始的显示位置
-static void set_vga_position() {
+// 设置显卡滚屏位置
+static void set_vga_scroll_position(u16 scroll_position) {
     outb(CRT_ADDR_REG, CRT_START_ADDR_H); 
-    outb(CRT_DATA_REG, 0);
+    u8 scroll_position_h = scroll_position >> 8;
+    outb(CRT_DATA_REG, scroll_position_h);
+
     outb(CRT_ADDR_REG, CRT_START_ADDR_L); 
-    outb(CRT_DATA_REG, 0);
+    u8 scroll_position_l = scroll_position;
+    outb(CRT_DATA_REG, scroll_position_l);
+}
+
+// 设置显卡滚屏位置
+static u16 get_vga_scroll_position() {
+    outb(CRT_ADDR_REG, CRT_START_ADDR_H); 
+    u8 scroll_position_h = inb(CRT_DATA_REG);
+    outb(CRT_ADDR_REG, CRT_START_ADDR_L); 
+    u8 scroll_position_l = inb(CRT_DATA_REG);
+    u16 scroll_position = scroll_position_h << 8;
+    scroll_position |= scroll_position_l;
+    return scroll_position;
+}
+
+// 是否需要滚屏操作
+static void scroll_up(int offset) {
+    int current_cursor_position = cursor_position;
+    if (current_cursor_position >= CRT_MEM_SIZE) {
+        // 把当前屏幕的数据拷贝到最前面去
+        u16 scroll_position = get_vga_scroll_position();
+        int char_number = current_cursor_position - scroll_position;
+        int char_mem = char_number * 2;
+        char* dst = (char*)CRT_MEM_BASE;
+        char* res = (vga_position - char_mem);
+        for (int i = 0; i < char_mem; i++) {
+            dst[i] = res[i];
+        }
+        // 把后面的区域清掉
+        u16* erase_start = (u16*)CRT_MEM_BASE + char_mem;
+        int len = CRT_MEM_SIZE - char_number;
+        for (int i = 0; i < CRT_MEM_SIZE; i++) {
+            erase_start[i] = ERASE;
+        }
+        // 重新设置光标、滚动位置等
+        set_vga_scroll_position(0);
+        cursor_position = char_number;
+        set_cursor_position();
+        vga_position = (char*)CRT_MEM_BASE + char_mem;
+        return;
+    } 
+    u16 scroll_position = get_vga_scroll_position();
+    current_cursor_position -= scroll_position;
+    if (current_cursor_position >= CRT_WIDTH * CRT_HEIGHT) {
+        // 滚动一屏幕
+        scroll_position += 2 * CRT_WIDTH;
+        set_vga_scroll_position(scroll_position);
+        return;
+    }
 }
 
 // 清屏操作
@@ -56,7 +109,7 @@ void console_clear() {
         vga_mem_start[i] = ERASE;
     }
     // 2、重新设置屏幕翻屏显示位置
-    set_vga_position();
+    set_vga_scroll_position(0);
     // 3、设置光标为 0 
     cursor_position = 0;
     set_cursor_position();
@@ -91,5 +144,6 @@ void console_write(const char *buf, u32 count) {
             break;
         }
     }
+    scroll_up(0);
     set_cursor_position();
 }
