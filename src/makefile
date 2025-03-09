@@ -28,13 +28,13 @@ ${BUILD}/kernel/%.o: ${SRC}/kernel/%.c
 	$(shell mkdir -p ${dir $@})
 	x86_64-elf-gcc ${CFLAGS} ${DEBUG} ${INCLUDE} -c $< -o $@
 
-${BUILD}/kernel/kernel.bin: ${BUILD}/kernel/start.o \
-	${BUILD}/kernel/kernel.o \
-	${BUILD}/kernel/io.o \
-	${BUILD}/kernel/console.o \
+${BUILD}/kernel/kernel.bin: ${BUILD}/kernel/kernel.o \
+	${BUILD}/kernel/drivers/io.o \
+	${BUILD}/kernel/drivers/console.o \
 	${BUILD}/kernel/printk.o \
 	${BUILD}/kernel/interrupt.o \
-	${BUILD}/kernel/interrupt_bridge.o
+	${BUILD}/kernel/bridge.o \
+	${BUILD}/kernel/time.o
 
 	$(shell mkdir -p ${dir $@})
 	x86_64-elf-ld -m elf_i386 -static $^ -o $@ -Ttext $(ENTRYPOINT)

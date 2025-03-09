@@ -3,7 +3,10 @@
 
 #include <os.h>
 
-extern void interrupt_bridge();
+ // 时钟中断号
+#define INTERRUPT_CLOCK_NUMBER 0x20 
+
+typedef void *interrupt_method_t; // 中断处理函数
 
 // 中断描述符表指针
 typedef struct idt_descriptor_ptr
@@ -35,5 +38,11 @@ typedef struct idt_descriptor
 
 // 激活初始化中断芯片
 void interrupt_init();
+
+// 打开硬件中断
+void open_hardware_interrupt(int interrupt_number);
+
+// 注册中断处理函数
+void register_interrupt_handler(int interrupt_number, interrupt_method_t method);
 
 #endif

@@ -2,14 +2,16 @@
 #include <console.h>
 #include <printk.h>
 #include <interrupt.h>
+#include <time.h>
 
 int os_magic = OS_MAGIC;
 
 void kernel_init(){
     console_init();
-    asm volatile("xchgw %bx, %bx");
     interrupt_init();
-    asm volatile("xchgw %bx, %bx");
-    int num = 2 / 0;
-    int a = 10;
+    time_init();
+    for (;;)
+    {
+       int i = 10;
+    }
 }
