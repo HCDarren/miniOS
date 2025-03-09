@@ -32,7 +32,9 @@ ${BUILD}/kernel/kernel.bin: ${BUILD}/kernel/start.o \
 	${BUILD}/kernel/kernel.o \
 	${BUILD}/kernel/io.o \
 	${BUILD}/kernel/console.o \
-	${BUILD}/kernel/printk.o
+	${BUILD}/kernel/printk.o \
+	${BUILD}/kernel/interrupt.o \
+	${BUILD}/kernel/interrupt_bridge.o
 
 	$(shell mkdir -p ${dir $@})
 	x86_64-elf-ld -m elf_i386 -static $^ -o $@ -Ttext $(ENTRYPOINT)
