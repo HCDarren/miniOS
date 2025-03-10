@@ -1,8 +1,9 @@
 #include <os.h>
-#include <console.h>
+#include <drivers/console.h>
 #include <printk.h>
 #include <interrupt.h>
 #include <time.h>
+#include <base/assert.h>
 
 int os_magic = OS_MAGIC;
 

@@ -1,6 +1,6 @@
 
-#include <console.h>
-#include <io.h>
+#include <drivers/console.h>
+#include <drivers/io.h>
 
 #define ERASE 0x0720
 // 显卡内存起始位置

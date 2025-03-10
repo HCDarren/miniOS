@@ -1,6 +1,7 @@
 #include <interrupt.h>
-#include <io.h>
+#include <drivers/io.h>
 #include <printk.h>
+#include <base/assert.h>
 
 #define PIC_M_CTRL 0x20 // 主片的控制端口
 #define PIC_M_DATA 0x21 // 主片的数据端口
@@ -91,7 +92,7 @@ static void set_interrupt_state(bool state)
 
 // 注册中断处理函数
 void register_interrupt_handler(int interrupt_number, interrupt_method_t method) {
-    // 缺 assert
+    assert((interrupt_number >= 0) && (interrupt_number <= INTERRUPT_TABLE_LENGTH));
     idt_descriptor *interrupt_table = (idt_descriptor *)INTERRUPT_TABLE_START;
     idt_descriptor* idt = &interrupt_table[interrupt_number];
     // 设置中断处理函数的位置
@@ -102,7 +103,7 @@ void register_interrupt_handler(int interrupt_number, interrupt_method_t method)
 // 打开硬件中断
 void open_hardware_interrupt(int interrupt_number)
 {
-    // 缺 assert
+    assert((HARDWARE_INTERRUPT_START <= interrupt_number) && (interrupt_number <= HARDWARE_INTERRUPT_END));
     interrupt_number -= HARDWARE_INTERRUPT_START;
     if (interrupt_number < 8) {
         u8 mask = inb(PIC_M_DATA) & ~(1 << interrupt_number);

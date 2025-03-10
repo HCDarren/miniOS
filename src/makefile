@@ -6,6 +6,8 @@ ENTRYPOINT:=0x10000
 CFLAGS:= -m32
 #去掉GCC的版本信息
 CFLAGS+= -Qn
+# debug 编译环境
+CFLAGS+= -DDEBUG
 CFLAGS+= -fno-builtin
 CFLAGS+= -nostdinc
 CFLAGS+= -fno-pic
@@ -34,7 +36,8 @@ ${BUILD}/kernel/kernel.bin: ${BUILD}/kernel/kernel.o \
 	${BUILD}/kernel/printk.o \
 	${BUILD}/kernel/interrupt.o \
 	${BUILD}/kernel/bridge.o \
-	${BUILD}/kernel/time.o
+	${BUILD}/kernel/time.o \
+	${BUILD}/kernel/base/assert.o
 
 	$(shell mkdir -p ${dir $@})
 	x86_64-elf-ld -m elf_i386 -static $^ -o $@ -Ttext $(ENTRYPOINT)

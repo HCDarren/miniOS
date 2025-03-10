@@ -1,6 +1,6 @@
 #include <printk.h>
-#include <stdarg.h>
-#include <console.h>
+#include <base/stdarg.h>
+#include <drivers/console.h>
 
 static char buf[1024];
 
