@@ -71,8 +71,8 @@ static void init_interrupt_table()
         idt->present = 1; 
         
         // 设置中断处理函数的位置
-        idt->offset0 = (u32)interrupt_handler_defalut & 0xffff;
-        idt->offset1 = ((u32)interrupt_handler_defalut >> 16) & 0xffff;
+        idt->offset0 = (u32_t)interrupt_handler_defalut & 0xffff;
+        idt->offset1 = ((u32_t)interrupt_handler_defalut >> 16) & 0xffff;
     }
 
     idt_ptr.limit = 0x3FF;
@@ -96,8 +96,8 @@ void register_interrupt_handler(int interrupt_number, interrupt_method_t method)
     idt_descriptor *interrupt_table = (idt_descriptor *)INTERRUPT_TABLE_START;
     idt_descriptor* idt = &interrupt_table[interrupt_number];
     // 设置中断处理函数的位置
-    idt->offset0 = (u32)method & 0xffff;
-    idt->offset1 = ((u32)method >> 16) & 0xffff;
+    idt->offset0 = (u32_t)method & 0xffff;
+    idt->offset1 = ((u32_t)method >> 16) & 0xffff;
 }
 
 // 打开硬件中断
@@ -106,10 +106,10 @@ void open_hardware_interrupt(int interrupt_number)
     assert((HARDWARE_INTERRUPT_START <= interrupt_number) && (interrupt_number <= HARDWARE_INTERRUPT_END));
     interrupt_number -= HARDWARE_INTERRUPT_START;
     if (interrupt_number < 8) {
-        u8 mask = inb(PIC_M_DATA) & ~(1 << interrupt_number);
+        u8_t mask = inb(PIC_M_DATA) & ~(1 << interrupt_number);
         outb(PIC_M_DATA, mask);
     } else {
-        u8 mask = inb(PIC_S_DATA) & ~(1 << interrupt_number);
+        u8_t mask = inb(PIC_S_DATA) & ~(1 << interrupt_number);
         outb(PIC_S_DATA, mask);
     }
 }

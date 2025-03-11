@@ -37,7 +37,10 @@ ${BUILD}/kernel/kernel.bin: ${BUILD}/kernel/kernel.o \
 	${BUILD}/kernel/interrupt.o \
 	${BUILD}/kernel/bridge.o \
 	${BUILD}/kernel/time.o \
-	${BUILD}/kernel/base/assert.o
+	${BUILD}/kernel/base/assert.o \
+	${BUILD}/kernel/scheduler.o \
+	${BUILD}/kernel/gdt.o \
+	${BUILD}/kernel/base/memory.o
 
 	$(shell mkdir -p ${dir $@})
 	x86_64-elf-ld -m elf_i386 -static $^ -o $@ -Ttext $(ENTRYPOINT)

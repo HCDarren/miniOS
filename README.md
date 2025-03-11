@@ -29,7 +29,9 @@
 
 ### 视频资料
 [C++ 学习视频(未完结)](https://www.bilibili.com/video/BV1Ga4y1m79j)  
-操作系统视频后续补充...  
+我的操作系统视频后续补充...  
+
+### 其他视频
 [一个8位二进制CPU的设计和实现](https://www.bilibili.com/video/BV1aP4y1s7Vf)  
 [x86 汇编语言](https://www.bilibili.com/video/BV1b44y1k7mT)  
 [操作系统实现](https://www.bilibili.com/video/BV1gR4y1u7or)  

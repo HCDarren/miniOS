@@ -6,6 +6,15 @@ _start:
     call kernel_init
     jmp $
 
+global task_switch
+task_switch:
+    ; 保存栈帧
+    push ebp
+    mov ebp, esp
+    mov edx, [ebp + 8]
+    push edx
+    ret
+
 %macro INTERRUPT_HANDLER 1
 extern do_interrupt_handler_%1
 global interrupt_handler_%1

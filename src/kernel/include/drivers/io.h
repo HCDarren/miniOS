@@ -3,16 +3,16 @@
 #include <os.h>
 
 // 读取一个字节
-extern u8 inb(u16 port);
+extern u8_t inb(u16_t port);
 // 读取一个字
-extern u16 inw(u16 port);
+extern u16_t inw(u16_t port);
 // 读取一个双字
-extern u32 indw(u16 port);
+extern u32_t indw(u16_t port);
 
 // 输出一个字节
-extern void outb(u16 port, u8 value);
+extern void outb(u16_t port, u8_t value);
 // 输出一个字
-extern void outw(u16 port, u16 value);
+extern void outw(u16_t port, u16_t value);
 // 输出一个双字
-extern void outdw(u16 port, u32 value);
+extern void outdw(u16_t port, u32_t value);
 #endif

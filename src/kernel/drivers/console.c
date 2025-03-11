@@ -26,39 +26,39 @@
 // 屏幕文本行数 
 #define CRT_HEIGHT 25                     
 // 光标位置
-static u16 cursor_position;
+static u16_t cursor_position;
 // 当前显卡的显示位置
 static char* vga_position;
 
 // 设置光标的位置
 static void set_cursor_position() {
     outb(CRT_ADDR_REG, CRT_CURSOR_H); 
-    u8 cursor_h = cursor_position >> 8;
+    u8_t cursor_h = cursor_position >> 8;
     outb(CRT_DATA_REG, cursor_h);
 
     outb(CRT_ADDR_REG, CRT_CURSOR_L); 
-    u8 cursor_l = cursor_position;
+    u8_t cursor_l = cursor_position;
     outb(CRT_DATA_REG, cursor_l);
 }
 
 // 设置显卡滚屏位置
-static void set_vga_scroll_position(u16 scroll_position) {
+static void set_vga_scroll_position(u16_t scroll_position) {
     outb(CRT_ADDR_REG, CRT_START_ADDR_H); 
-    u8 scroll_position_h = scroll_position >> 8;
+    u8_t scroll_position_h = scroll_position >> 8;
     outb(CRT_DATA_REG, scroll_position_h);
 
     outb(CRT_ADDR_REG, CRT_START_ADDR_L); 
-    u8 scroll_position_l = scroll_position;
+    u8_t scroll_position_l = scroll_position;
     outb(CRT_DATA_REG, scroll_position_l);
 }
 
 // 设置显卡滚屏位置
-static u16 get_vga_scroll_position() {
+static u16_t get_vga_scroll_position() {
     outb(CRT_ADDR_REG, CRT_START_ADDR_H); 
-    u8 scroll_position_h = inb(CRT_DATA_REG);
+    u8_t scroll_position_h = inb(CRT_DATA_REG);
     outb(CRT_ADDR_REG, CRT_START_ADDR_L); 
-    u8 scroll_position_l = inb(CRT_DATA_REG);
-    u16 scroll_position = scroll_position_h << 8;
+    u8_t scroll_position_l = inb(CRT_DATA_REG);
+    u16_t scroll_position = scroll_position_h << 8;
     scroll_position |= scroll_position_l;
     return scroll_position;
 }
@@ -68,7 +68,7 @@ static void scroll_up(int offset) {
     int current_cursor_position = cursor_position;
     if (current_cursor_position >= CRT_MEM_SIZE) {
         // 把当前屏幕的数据拷贝到最前面去
-        u16 scroll_position = get_vga_scroll_position();
+        u16_t scroll_position = get_vga_scroll_position();
         int char_number = current_cursor_position - scroll_position;
         int char_mem = char_number * 2;
         char* dst = (char*)CRT_MEM_BASE;
@@ -77,7 +77,7 @@ static void scroll_up(int offset) {
             dst[i] = res[i];
         }
         // 把后面的区域清掉
-        u16* erase_start = (u16*)CRT_MEM_BASE + char_mem;
+        u16_t* erase_start = (u16_t*)CRT_MEM_BASE + char_mem;
         int len = CRT_MEM_SIZE - char_number;
         for (int i = 0; i < CRT_MEM_SIZE; i++) {
             erase_start[i] = ERASE;
@@ -89,7 +89,7 @@ static void scroll_up(int offset) {
         vga_position = (char*)CRT_MEM_BASE + char_mem;
         return;
     } 
-    u16 scroll_position = get_vga_scroll_position();
+    u16_t scroll_position = get_vga_scroll_position();
     current_cursor_position -= scroll_position;
     if (current_cursor_position >= CRT_WIDTH * CRT_HEIGHT) {
         // 滚动一屏幕
@@ -104,7 +104,7 @@ void console_clear() {
     // 清屏怎么做？只是清除当前屏幕的操作，mac 上数据往上翻还是能翻到数据
     // 这里我们简单一点，全部清掉。
     // 1、屏幕缓冲区都填充空格
-    u16* vga_mem_start = (u16*)CRT_MEM_BASE;
+    u16_t* vga_mem_start = (u16_t*)CRT_MEM_BASE;
     for (int i = 0; i < CRT_MEM_SIZE; i++) {
         vga_mem_start[i] = ERASE;
     }
@@ -120,7 +120,7 @@ void console_init() {
     console_clear();
 }
 
-void console_write(const char *buf, u32 count) {
+void console_write(const char *buf, u32_t count) {
     // 往里面写怎么写？边界场景需要考虑哪一些?
     // 目前先够用就行，后续键盘驱动起来了再来新增调整代码
     for(int i = 0; i < count; i++) {
