@@ -1,5 +1,5 @@
 #include <gdt.h>
-#include <base/memory.h>
+#include <base/string.h>
 #include <base/assert.h>
 gdt_descriptor_t gdt_table[GDT_TABLE_SIZE] = {0}; 
 gdt_descriptor_pointer_t gdt_ptr;          // 内核全局描述符表指针

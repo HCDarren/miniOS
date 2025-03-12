@@ -1,4 +1,4 @@
-#include <base/memory.h>
+#include <base/string.h>
 #include <base/assert.h>
 
 void memcpy(void *dst, const void *src, size_t count) {
@@ -10,7 +10,11 @@ void memcpy(void *dst, const void *src, size_t count) {
     }
 }
 
-void memset(void *dst, const size_t data, const size_t len) {
+void memset(void *dst, const size_t data, size_t len) {
     assert(dst != NULL);
-
+    char *ptr = dst;
+    while (len--)
+    {
+        *ptr++ = data;
+    }
 }

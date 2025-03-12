@@ -4,6 +4,7 @@
 #include <gdt.h>
 #include <tss.h>
 #include <printk.h>
+#include <interrupt.h>
 
 #define PAGE_SIZE 0x1000
 
@@ -28,6 +29,7 @@ void schedule()
 
 u32_t thread_a()
 {
+    open_cpu_interrupt();
     while (true)
     {
         printk("A");
@@ -36,6 +38,7 @@ u32_t thread_a()
 
 u32_t thread_b()
 {
+    open_cpu_interrupt();
     while (true)
     {
         printk("B");

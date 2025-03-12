@@ -3,6 +3,7 @@
 
 #define OS_MAGIC 0x55aa
 #define NULL 0
+#define EOF -1
 // 用于定义特殊的结构体
 #define __packed __attribute__((packed))
 

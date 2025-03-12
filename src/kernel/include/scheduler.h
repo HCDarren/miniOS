@@ -7,6 +7,8 @@
 typedef struct task_struct
 {
     u32_t *stack; // 内核栈
+    u32_t ticks;               // 剩余时间片
+    u32_t jiffies;             // 上次执行时全局时间片
 } task_t;
 
 typedef struct task_frame_t
