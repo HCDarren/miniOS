@@ -2,6 +2,7 @@
 #include <drivers/io.h>
 #include <interrupt.h>
 #include <printk.h>
+#include <scheduler.h>
 
 #define PIT_CHAN0_REG 0X40
 #define PIT_CTRL_REG 0X43
@@ -17,7 +18,9 @@ extern void interrupt_handler_time();
 
 static int index = 0;
 void do_interrupt_handler_time() {
-    printk("interrupt_handler_time. %d\r\n", ++index);
+    pic_send_eoi(INTERRUPT_CLOCK_NUMBER);
+    // printk("Hello world!\r\n");
+    schedule();
 }
 
 void time_init(void) {

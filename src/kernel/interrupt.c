@@ -12,6 +12,9 @@
 #define HARDWARE_INTERRUPT_START 0x20
 #define HARDWARE_INTERRUPT_END 0x30
 
+// 通知中断控制器中断结束
+#define PIC_EOI 0x20    
+
 // 中断的向量表的起始位置，覆盖 bios 的中断向量数据
 #define INTERRUPT_TABLE_START 0x00000000
 // 中断向量表的长度 1K / 8 = 128
@@ -33,8 +36,8 @@ static void activate_interrupt_chipset()
     outb(PIC_M_DATA, HARDWARE_INTERRUPT_START);
     // ICW3: IR2接从片.
     outb(PIC_M_DATA, 0b00000100);
-    // ICW4: 8086模式, 自动EOI
-    outb(PIC_M_DATA, 0b00000011);
+    // ICW4: 8086模式, 手动EOI
+    outb(PIC_M_DATA, 0b00000001);
 
     // ICW1: 边沿触发, 级联 8259, 需要ICW4.
     outb(PIC_S_CTRL, 0b00010001);
@@ -42,8 +45,8 @@ static void activate_interrupt_chipset()
     outb(PIC_S_DATA, 0x28);
     // ICW3: 设置从片连接到主片的 IR2 引脚
     outb(PIC_S_DATA, 2);
-    // ICW4: 8086模式, 自动EOI
-    outb(PIC_S_DATA, 0b00000011);
+    // ICW4: 8086模式, 手动EOI
+    outb(PIC_S_DATA, 0b00000001);
     // 暂时先关闭所有硬件中断
     outb(PIC_M_DATA, 0b11111111);
     // 暂时先关闭所有硬件中断
@@ -129,6 +132,16 @@ void close_cpu_interrupt()
 void do_interrupt_handler_defalut()
 {
     printk("interrupt_exception!!!\r\n");
+}
+
+void pic_send_eoi(int interrupt_number) {
+    assert((HARDWARE_INTERRUPT_START <= interrupt_number) && (interrupt_number <= HARDWARE_INTERRUPT_END));
+    interrupt_number -= HARDWARE_INTERRUPT_START;
+    if (interrupt_number < 8) {
+        outb(PIC_M_CTRL, PIC_EOI);
+    } else {
+        outb(PIC_S_CTRL, PIC_EOI);
+    }
 }
 
 void interrupt_init()

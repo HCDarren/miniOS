@@ -22,4 +22,7 @@ void task_init();
 
 void init_task(task_t* task, u32_t* entry, u32_t* esp);
 
+// 调度
+void schedule();
+
 #endif

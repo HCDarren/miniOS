@@ -31,7 +31,6 @@ u32_t thread_a()
     while (true)
     {
         printk("A");
-        schedule();
     }
 }
 
@@ -40,7 +39,6 @@ u32_t thread_b()
     while (true)
     {
         printk("B");
-        schedule();
     }
 }
 
@@ -63,7 +61,6 @@ void task_init()
 {
     task_create(a, thread_a);
     task_create(b, thread_b);
-    schedule();
 }
 
 void init_task(task_t* task, u32_t* entry, u32_t* esp) {

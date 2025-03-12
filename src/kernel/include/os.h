@@ -17,6 +17,7 @@ typedef _Bool bool;
 typedef unsigned char u8_t;
 typedef unsigned short u16_t;
 typedef unsigned int u32_t;
+typedef unsigned long long u64_t;
 
 // 初始化内核
 void kernel_init();

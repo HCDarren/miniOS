@@ -2,6 +2,9 @@
 
 dw 0x55aa
 
+; 把内存信息放这个位置，方便内核再去读取这些信息，一个约定
+memory_detect_ards equ 0xfffc
+
 ; 显示文本
 mov si,loader_message
 call print
@@ -22,7 +25,7 @@ detect_memory:
 
         jc error
         add di, cx
-        inc word [ards_count]
+        inc dword [ards_count]
         cmp ebx, 0
         jnz .next
 
@@ -90,6 +93,8 @@ enter_protected_mode:
     mov bl, 100
     call read_disk
 
+    mov ebx, ards_count
+    mov [memory_detect_ards], ebx
     jmp dword code_selector:0x10000
     ud2
 
@@ -195,5 +200,5 @@ gdt_data:
 gdt_end:
 
 ards_count:
-    db 0
+    dd 0
 ards_buffer:

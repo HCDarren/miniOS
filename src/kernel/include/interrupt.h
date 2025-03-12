@@ -45,4 +45,7 @@ void open_hardware_interrupt(int interrupt_number);
 // 注册中断处理函数
 void register_interrupt_handler(int interrupt_number, interrupt_method_t method);
 
+// 通知中断控制器中断结束
+void pic_send_eoi(int interrupt_number);
+
 #endif
