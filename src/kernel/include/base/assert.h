@@ -6,7 +6,7 @@ void assert_failure(const char *file, const char *func, int line, const char *ex
 #ifdef DEBUG // debug 版本
 
 #define assert(expr) \
-    if(!expr) assert_failure(__FILE__, __func__, __LINE__, #expr)
+    if(!(expr)) assert_failure(__FILE__, __func__, __LINE__, #expr)
 #else // 正式版本
     #define  assert(expr) ;
 #endif

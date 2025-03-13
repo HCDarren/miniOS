@@ -15,8 +15,8 @@ void kernel_init(){
     gdt_init();
     console_init();
     interrupt_init();
-    task_init();
-    time_init();
+    // task_init();
+    // time_init();
     memory_init();
 
     while (true)

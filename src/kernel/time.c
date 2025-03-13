@@ -19,7 +19,6 @@ extern void interrupt_handler_time();
 static int index = 0;
 void do_interrupt_handler_time() {
     pic_send_eoi(INTERRUPT_CLOCK_NUMBER);
-    // printk("Hello world!\r\n");
     schedule();
 }
 

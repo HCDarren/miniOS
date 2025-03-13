@@ -75,11 +75,11 @@ static int vsprintf(char buf[], const char *format, va_list args)
 
 void printk(const char *format, ...)
 {
-    close_cpu_interrupt();
+    // close_cpu_interrupt();
     va_list args;
     va_start(args, format);
     int str_len = vsprintf(buf, format, args);
     va_end(args);
     console_write(buf, str_len);
-    open_cpu_interrupt();
+    // open_cpu_interrupt();
 }

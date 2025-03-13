@@ -1,8 +1,9 @@
-#include <bitmap.h>
+#include "memory/bitmap.h"
 #include <base/string.h>
+#include <base/assert.h>
 
 // 位图初始化
-void bitmap_init(bitmap_t* bitmap, u32_t* bits, u32_t size) {
+void bitmap_init(bitmap_t* bitmap, u8_t* bits, u32_t size) {
     assert(size % 8 == 0);
     bitmap->bits = bits;
     bitmap->size = size;
@@ -22,6 +23,7 @@ bool bitmap_search_available(bitmap_t* bitmap, u32_t index) {
 }
 
 // 设置 bitmap 某位的值
+// value: true 为占用；false 为闲置
 void bitmap_set_state(bitmap_t* bitmap, u32_t index, bool value) {
     // 断言异常
     assert(index < bitmap->size);
@@ -38,6 +40,16 @@ void bitmap_set_state(bitmap_t* bitmap, u32_t index, bool value) {
     {
         // 置为 0 注意这里不要写错了
         bitmap->bits[bytes] &= ~(1 << bits);
+    }
+}
+
+// 设置 bitmap 某位的值
+void bitmap_free(bitmap_t* bitmap, u32_t index, const u32_t free_count) {
+    // 断言异常
+    assert((index - free_count) < bitmap->size);
+    for (size_t i = 0; i < free_count; i++)
+    {
+        bitmap_set_state(bitmap, i + index, false);
     }
 }
 
@@ -63,9 +75,9 @@ int bitmap_scan_alloc(bitmap_t* bitmap, const u32_t count) {
         return EOF;
     }
     // 标记为已经分配，不可用
-    for (size_t i = matched_index; i < count; i++)
+    for (size_t i = 0; i < count; i++)
     {
-        bitmap_set_state(bitmap, i, true);
+        bitmap_set_state(bitmap, i + matched_index, true);
     }
 
     return matched_index;

@@ -41,7 +41,8 @@ ${BUILD}/kernel/kernel.bin: ${BUILD}/kernel/kernel.o \
 	${BUILD}/kernel/scheduler.o \
 	${BUILD}/kernel/gdt.o \
 	${BUILD}/kernel/base/string.o \
-	${BUILD}/kernel/memory/memory_manager.o
+	${BUILD}/kernel/memory/memory_manager.o \
+	${BUILD}/kernel/memory/bitmap.o
 
 	$(shell mkdir -p ${dir $@})
 	x86_64-elf-ld -m elf_i386 -static $^ -o $@ -Ttext $(ENTRYPOINT)

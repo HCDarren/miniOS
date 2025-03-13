@@ -24,7 +24,16 @@ void schedule()
 {
     task_t *current = running_task();
     task_t *next = current == a ? b : a;
-    task_switch(next);
+    if (current != a && current != b) {
+        task_switch(next);
+        return;
+    }
+    --current->ticks;
+    current->jiffies++;
+    if (current->ticks == 0) {
+        current->ticks = TASK_DEFUALT_TICKS;
+        task_switch(next);
+    }
 }
 
 u32_t thread_a()
@@ -58,6 +67,9 @@ static void task_create(task_t *task, void* target)
     frame->eip = (void *)target;
 
     task->stack = (u32_t *)stack;
+    task->jiffies = 0;
+    task->priority = 0;
+    task->ticks = TASK_DEFUALT_TICKS;
 }
 
 void task_init()

@@ -15,6 +15,11 @@ typedef struct bitmap
     u32_t size;
 } __packed bitmap_t;
 
-void bitmap_init(bitmap_t* bitmap, u8_t* bits, u32_t count, u8_t init_value);
+void bitmap_init(bitmap_t* bitmap, u8_t* bits, u32_t count);
 
+// 扫描分配，连续的标记分配
+int bitmap_scan_alloc(bitmap_t* bitmap, const u32_t count);
+
+// 释放 bitmap
+void bitmap_free(bitmap_t* bitmap, u32_t index, const u32_t free_count);
 #endif
