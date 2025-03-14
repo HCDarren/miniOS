@@ -1,10 +1,11 @@
-#include <scheduler.h>
+#include <task/task_manager.h>
 #include <os.h>
 #include <base/assert.h>
 #include <gdt.h>
 #include <tss.h>
 #include <printk.h>
 #include <interrupt.h>
+#include <task/list.h>
 
 #define PAGE_SIZE 0x1000
 
@@ -76,8 +77,20 @@ void task_init()
 {
     task_create(a, thread_a);
     task_create(b, thread_b);
-}
 
-void init_task(task_t* task, u32_t* entry, u32_t* esp) {
-    assert(task != NULL);
+    list_t list;
+    list_init(&list);
+
+    list_node_t list_node[5];
+    for (size_t i = 0; i < 5; i++)
+    {
+       list_add_header(&list, &list_node[i]);
+       printk("add list_node: 0x%x\r\n", &list_node[i]);
+    }
+    
+    for (size_t i = 0; i < 6; i++)
+    {
+        list_node_t* list_node = list_remove_tail(&list);
+        printk("remove list_node: %x\r\n", list_node);
+    }
 }

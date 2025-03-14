@@ -38,7 +38,8 @@ ${BUILD}/kernel/kernel.bin: ${BUILD}/kernel/kernel.o \
 	${BUILD}/kernel/bridge.o \
 	${BUILD}/kernel/time.o \
 	${BUILD}/kernel/base/assert.o \
-	${BUILD}/kernel/scheduler.o \
+	${BUILD}/kernel/task/list.o \
+	${BUILD}/kernel/task/task_manager.o \
 	${BUILD}/kernel/gdt.o \
 	${BUILD}/kernel/base/string.o \
 	${BUILD}/kernel/memory/memory_manager.o \

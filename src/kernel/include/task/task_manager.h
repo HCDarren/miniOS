@@ -1,5 +1,5 @@
-#ifndef MINIOS_SCHEDER_H
-#define MINIOS_SCHEDER_H
+#ifndef MINIOS_TASK_MANAGER_H
+#define MINIOS_TASK_MANAGER_H
 #include <tss.h>
 #include <os.h>
 
@@ -30,8 +30,6 @@ typedef struct task_frame_t
 } task_frame_t;
 
 void task_init();
-
-void init_task(task_t* task, u32_t* entry, u32_t* esp);
 
 // 调度
 void schedule();

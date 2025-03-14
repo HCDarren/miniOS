@@ -2,7 +2,7 @@
 #include <drivers/io.h>
 #include <interrupt.h>
 #include <printk.h>
-#include <scheduler.h>
+#include <task/task_manager.h>
 
 #define PIT_CHAN0_REG 0X40
 #define PIT_CTRL_REG 0X43
