@@ -93,4 +93,9 @@ void task_init()
         list_node_t* list_node = list_remove_tail(&list);
         printk("remove list_node: %x\r\n", list_node);
     }
+    
+    task_t task;
+    task_t* task_p = &task;
+    u32_t offset = FIELD_OFFSET_IN_STRUCT(task_t, list_node);
+    task_t* new_task_p = STRUCT_ADDR_BY_FILED_ADDR(&task.list_node, list_node, task_t);
 }
