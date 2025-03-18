@@ -7,13 +7,6 @@
 #define PIT_CHAN0_REG 0X40
 #define PIT_CTRL_REG 0X43
 
-// 1000 / 100 = 10ms
-#define HZ 100
-// 振荡器固定的
-#define OSCILLATOR 1193182 
-#define CLOCK_COUNTER (OSCILLATOR / HZ)
-#define JIFFY (1000 / HZ)
-
 extern void interrupt_handler_time();
 
 static int index = 0;

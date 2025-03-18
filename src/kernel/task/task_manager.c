@@ -5,6 +5,7 @@
 #include <tss.h>
 #include <printk.h>
 #include <interrupt.h>
+#include <time.h>
 #include <task/list.h>
 #include <memory/memory_manager.h>
 
@@ -12,12 +13,23 @@
 
 static task_manager_t task_manager;
 
+// 系统总的运行时间片
+static u32_t jiffies = 0;
+
 extern void task_switch(task_t *next);
 
 void schedule()
 {
+    jiffies++;
+    // 处理等待队列
+    task_weakup();
     list_node_t* running_node = list_header(&task_manager.running_list);
     list_node_t* ready_node = list_header(&task_manager.ready_list);
+
+    // 直接先不跑了，后面至少会存在一个系统进程，偷偷摸摸运行
+    if (running_node == NULL && ready_node == NULL) {
+        return;
+    }
     task_t *ready_task = STRUCT_ADDR_BY_FILED_ADDR(ready_node, list_node, task_t);
 
     if (running_node != nullptr) {
@@ -44,7 +56,9 @@ u32_t thread_a()
     open_cpu_interrupt();
     while (true)
     {
-        printk("A");
+        printk("A: %d\r\n", jiffies);
+        // 睡眠 1S 中
+        task_sleep(1000);
     }
 }
 
@@ -53,7 +67,7 @@ u32_t thread_b()
     open_cpu_interrupt();
     while (true)
     {
-        printk("B");
+        //printk("B");
     }
 }
 
@@ -62,7 +76,7 @@ u32_t thread_c()
     open_cpu_interrupt();
     while (true)
     {
-        printk("C");
+        //printk("C");
     }
 }
 
@@ -104,4 +118,28 @@ void task_init()
     list_add_tail(&task_manager.ready_list, &a->list_node);
     list_add_tail(&task_manager.ready_list, &b->list_node);
     list_add_tail(&task_manager.ready_list, &c->list_node);
+}
+
+// 进程睡眠：时间毫秒值
+void task_sleep(u32_t sleep_time) {
+    list_node_t* running_node = list_remove_header(&task_manager.running_list);
+    task_t *running_task = STRUCT_ADDR_BY_FILED_ADDR(running_node, list_node, task_t);
+    u32_t sleep_jiffies = sleep_time / JIFFY;
+    // 最少一个时间片
+    running_task->sleep_stop_jiffies =  sleep_jiffies <= 0 ? (jiffies + 1) : (jiffies + sleep_jiffies);
+    // 这里最好是一个排序插入，先简单写了，时间最短的在最前面
+    list_add_tail(&task_manager.wait_list, running_node);
+    // 直接执行调度，交出 cpu 控制权
+    schedule();
+}
+
+// 进程唤醒
+void task_weakup() {
+    list_node_t* wait_node = list_header(&task_manager.wait_list);
+    task_t *wait_task = STRUCT_ADDR_BY_FILED_ADDR(wait_node, list_node, task_t);
+    if (jiffies >= wait_task->sleep_stop_jiffies) {
+        // 加到就绪队列的尾部
+        list_remove_header(&task_manager.wait_list);
+        list_add_tail(&task_manager.ready_list, wait_node);
+    }
 }

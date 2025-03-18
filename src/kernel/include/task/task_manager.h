@@ -13,7 +13,7 @@
     (STRUCT_NAME *)((u32_t)(FIELD_ADDR) - FIELD_OFFSET_IN_STRUCT(STRUCT_NAME, FIELD_NAME))
 
 // 每个进程每次执行的默认时间片
-#define TASK_DEFUALT_TICKS 100
+#define TASK_DEFUALT_TICKS 10
 
 #define TASK_NAME_SIZE 32
 
@@ -56,6 +56,8 @@ typedef struct task_struct
     u32_t ticks;
     // 当前进程获取到的时间片
     u32_t jiffies;
+    // 睡眠结束的时间片
+    u32_t sleep_stop_jiffies;
 } task_t;
 
 // 进程管理
@@ -83,6 +85,15 @@ typedef struct task_frame_t
 } task_frame_t;
 
 void task_init();
+
+// 进程睡眠：时间毫秒值
+void task_sleep(u32_t sleep_time);
+
+// 进程唤醒
+void task_weakup();
+
+// 主动交出 cpu 的控制权
+void task_yield();
 
 // 调度
 void schedule();
