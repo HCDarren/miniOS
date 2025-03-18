@@ -14,7 +14,9 @@ int os_magic = OS_MAGIC;
 void kernel_init(){
     console_init();
     memory_init();
+    interrupt_init();
     task_init();
+    time_init();
     while (true)
     {
         /* code */

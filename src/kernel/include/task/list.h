@@ -23,6 +23,10 @@ void list_init(list_t* list);
 
 bool list_is_empty(list_t* list);
 
+list_node_t* list_header(list_t* list);
+
+list_node_t* list_tail(list_t* list);
+
 void list_add_header(list_t* list, list_node_t* list_node);
 
 void list_add_tail(list_t* list, list_node_t* list_node);

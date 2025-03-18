@@ -6,34 +6,36 @@
 #include <printk.h>
 #include <interrupt.h>
 #include <task/list.h>
+#include <memory/memory_manager.h>
 
 #define PAGE_SIZE 0x1000
 
-task_t *a = (task_t *)0x1000;
-task_t *b = (task_t *)0x2000;
+static task_manager_t task_manager;
 
 extern void task_switch(task_t *next);
 
-task_t *running_task()
-{
-    asm volatile(
-        "movl %esp, %eax\n"
-        "andl $0xfffff000, %eax\n");
-}
-
 void schedule()
 {
-    task_t *current = running_task();
-    task_t *next = current == a ? b : a;
-    if (current != a && current != b) {
-        task_switch(next);
-        return;
-    }
-    --current->ticks;
-    current->jiffies++;
-    if (current->ticks == 0) {
-        current->ticks = TASK_DEFUALT_TICKS;
-        task_switch(next);
+    list_node_t* running_node = list_header(&task_manager.running_list);
+    list_node_t* ready_node = list_header(&task_manager.ready_list);
+    task_t *ready_task = STRUCT_ADDR_BY_FILED_ADDR(ready_node, list_node, task_t);
+
+    if (running_node != nullptr) {
+        task_t *running_task = STRUCT_ADDR_BY_FILED_ADDR(running_node, list_node, task_t);
+        --running_task->ticks;
+        running_task->jiffies++;
+        if (running_task->ticks == 0) {
+            running_task->ticks = TASK_DEFUALT_TICKS;
+            list_remove_header(&task_manager.ready_list);
+            list_remove_header(&task_manager.running_list);
+            list_add_tail(&task_manager.ready_list, &running_task->list_node);
+            list_add_tail(&task_manager.running_list, &ready_task->list_node);
+            task_switch(ready_task);
+        }
+    } else {
+        list_remove_header(&task_manager.ready_list);
+        list_add_tail(&task_manager.running_list, &ready_task->list_node);
+        task_switch(ready_task);
     }
 }
 
@@ -55,6 +57,15 @@ u32_t thread_b()
     }
 }
 
+u32_t thread_c()
+{
+    open_cpu_interrupt();
+    while (true)
+    {
+        printk("C");
+    }
+}
+
 static void task_create(task_t *task, void* target)
 {
     u32_t stack = (u32_t)task + PAGE_SIZE;
@@ -73,29 +84,24 @@ static void task_create(task_t *task, void* target)
     task->ticks = TASK_DEFUALT_TICKS;
 }
 
+void init_task_manager() {
+    list_init(&task_manager.all_task_list);
+    list_init(&task_manager.wait_list);
+    list_init(&task_manager.ready_list);
+    list_init(&task_manager.running_list);
+    list_init(&task_manager.zombie_list);
+}
+
 void task_init()
 {
+    task_t * a = alloc_a_page();
     task_create(a, thread_a);
+    task_t * b = alloc_a_page();
     task_create(b, thread_b);
-
-    list_t list;
-    list_init(&list);
-
-    list_node_t list_node[5];
-    for (size_t i = 0; i < 5; i++)
-    {
-       list_add_header(&list, &list_node[i]);
-       printk("add list_node: 0x%x\r\n", &list_node[i]);
-    }
-    
-    for (size_t i = 0; i < 6; i++)
-    {
-        list_node_t* list_node = list_remove_tail(&list);
-        printk("remove list_node: %x\r\n", list_node);
-    }
-    
-    task_t task;
-    task_t* task_p = &task;
-    u32_t offset = FIELD_OFFSET_IN_STRUCT(task_t, list_node);
-    task_t* new_task_p = STRUCT_ADDR_BY_FILED_ADDR(&task.list_node, list_node, task_t);
+    task_t * c = alloc_a_page();
+    task_create(c, thread_c);
+    init_task_manager();
+    list_add_tail(&task_manager.ready_list, &a->list_node);
+    list_add_tail(&task_manager.ready_list, &b->list_node);
+    list_add_tail(&task_manager.ready_list, &c->list_node);
 }
