@@ -54,4 +54,10 @@ void close_cpu_interrupt();
 // 通知中断控制器中断结束
 void pic_send_eoi(int interrupt_number);
 
+// 关中断的方式进入临界保护区
+bool enter_critical_protection();
+
+// 退出临界保护区，恢复之前中断状态
+void leave_critical_protection(bool state);
+
 #endif

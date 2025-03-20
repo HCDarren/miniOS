@@ -6,6 +6,7 @@
 #include <task/task_manager.h>
 #include <gdt.h>
 #include <base/assert.h>
+#include <base/asm_instruct.h>
 #include <memory/memory_manager.h>
 
 int os_magic = OS_MAGIC;
@@ -19,7 +20,6 @@ void kernel_init(){
     time_init();
     while (true)
     {
-        /* code */
+        hlt();
     }
-    
 }

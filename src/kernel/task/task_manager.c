@@ -19,8 +19,11 @@ static u32_t jiffies = 0;
 
 extern void task_switch(task_t *next);
 
+int number = 0;
+
 void schedule()
 {
+    bool state = enter_critical_protection(); // 
     jiffies++;
     // 处理等待队列
     task_weakup();
@@ -43,11 +46,13 @@ void schedule()
             list_remove_header(&task_manager.running_list);
             list_add_tail(&task_manager.ready_list, &running_task->list_node);
             list_add_tail(&task_manager.running_list, &ready_task->list_node);
+            leave_critical_protection(state);
             task_switch(ready_task);
         }
     } else {
         list_remove_header(&task_manager.ready_list);
         list_add_tail(&task_manager.running_list, &ready_task->list_node);
+        leave_critical_protection(state);
         task_switch(ready_task);
     }
 }
@@ -61,18 +66,35 @@ u32_t idle_task_work()
     }
 }
 
-u32_t thread_c()
+void number_add(){
+    bool state = enter_critical_protection(); // 
+    number = number + 1;
+    leave_critical_protection(state);
+}
+
+u32_t thread_b()
 {
-    int i = 0;
-    printk("--->");
-    open_cpu_interrupt();
+    for (size_t i = 0; i < 1000000; i++)
+    {
+        number_add();
+    }
+    printk("B ---> %d\r\n", number);
     while (true)
     {
-        printk("C: %d\r\n", jiffies);
-        printk("D: %d\r\n", jiffies);
-        // 睡眠 1S 中
-        task_sleep(1000);
-        printk("E: %d\r\n", jiffies);
+       hlt();
+    }
+}
+
+u32_t thread_c()
+{
+    for (size_t i = 0; i < 1000000; i++)
+    {
+        number_add();
+    }
+    printk("C ---> %d\r\n", number);
+    while (true)
+    {
+       hlt();
     }
 }
 
@@ -106,10 +128,13 @@ void task_init()
 {
     task_t * idle_task = alloc_a_page();
     task_create(idle_task, idle_task_work);
+    task_t * b = alloc_a_page();
+    task_create(b, thread_b);
     task_t * c = alloc_a_page();
     task_create(c, thread_c);
     init_task_manager();
     list_add_tail(&task_manager.ready_list, &idle_task->list_node);
+    list_add_tail(&task_manager.ready_list, &b->list_node);
     list_add_tail(&task_manager.ready_list, &c->list_node);
 }
 

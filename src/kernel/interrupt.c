@@ -150,3 +150,22 @@ void interrupt_init()
     init_interrupt_table();
     open_cpu_interrupt();
 }
+
+// 关中断的方式进入临界保护区
+bool enter_critical_protection()
+{
+    // eflag 没办法直接获取，但是有 push 和 pop 一套组合拳
+    asm volatile(
+        "pushfl\n"
+        "cli\n"
+        "popl %eax\n"
+        "shrl $9, %eax\n"
+        "andl $1, %eax\n"
+    );
+}
+
+// 退出临界保护区，恢复之前中断状态
+void leave_critical_protection(bool state)
+{
+    set_interrupt_state(state);
+}
