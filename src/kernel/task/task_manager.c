@@ -8,6 +8,7 @@
 #include <time.h>
 #include <task/list.h>
 #include <memory/memory_manager.h>
+#include <base/asm_instruct.h>
 
 #define PAGE_SIZE 0x1000
 
@@ -26,10 +27,10 @@ void schedule()
     list_node_t* running_node = list_header(&task_manager.running_list);
     list_node_t* ready_node = list_header(&task_manager.ready_list);
 
-    // 直接先不跑了，后面至少会存在一个系统进程，偷偷摸摸运行
-    if (running_node == NULL && ready_node == NULL) {
+    if (ready_node == NULL) {
         return;
     }
+    
     task_t *ready_task = STRUCT_ADDR_BY_FILED_ADDR(ready_node, list_node, task_t);
 
     if (running_node != nullptr) {
@@ -51,32 +52,27 @@ void schedule()
     }
 }
 
-u32_t thread_a()
+u32_t idle_task_work()
 {
     open_cpu_interrupt();
     while (true)
     {
-        printk("A: %d\r\n", jiffies);
-        // 睡眠 1S 中
-        task_sleep(1000);
-    }
-}
-
-u32_t thread_b()
-{
-    open_cpu_interrupt();
-    while (true)
-    {
-        //printk("B");
+       hlt();
     }
 }
 
 u32_t thread_c()
 {
+    int i = 0;
+    printk("--->");
     open_cpu_interrupt();
     while (true)
     {
-        //printk("C");
+        printk("C: %d\r\n", jiffies);
+        printk("D: %d\r\n", jiffies);
+        // 睡眠 1S 中
+        task_sleep(1000);
+        printk("E: %d\r\n", jiffies);
     }
 }
 
@@ -108,15 +104,12 @@ void init_task_manager() {
 
 void task_init()
 {
-    task_t * a = alloc_a_page();
-    task_create(a, thread_a);
-    task_t * b = alloc_a_page();
-    task_create(b, thread_b);
+    task_t * idle_task = alloc_a_page();
+    task_create(idle_task, idle_task_work);
     task_t * c = alloc_a_page();
     task_create(c, thread_c);
     init_task_manager();
-    list_add_tail(&task_manager.ready_list, &a->list_node);
-    list_add_tail(&task_manager.ready_list, &b->list_node);
+    list_add_tail(&task_manager.ready_list, &idle_task->list_node);
     list_add_tail(&task_manager.ready_list, &c->list_node);
 }
 

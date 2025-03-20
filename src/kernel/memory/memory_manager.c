@@ -137,21 +137,7 @@ void memory_init()
     memory_manager_alloc = (memory_manager_alloc_t*)0x7c00;
     u8_t *bits = (u8_t *)(memory_manager_alloc + sizeof(memory_manager_alloc_t));
     init_memory_manager_alloc(memory_manager_alloc, bits, max_memory_start, max_memory_size);
-
-    // 内存分配的测试代码
-    for (size_t i = 0; i < count; i++)
-    {
-        void* addr = alloc_a_page();
-        printk("alloc_a_page: 0x%x\r\n", addr);
-    }
     
-    for (size_t i = 0; i < count; i++)
-    {
-        void* addr = alloc_pages(2);
-        printk("alloc_a_page: 0x%x\r\n", addr);
-        free_pages(addr, 2);
-    }
-
     // 这里可以再加一些各种检测、通用代码。这里规划是写死了，0M - 4M 给内核了，而且必须要 1-1 匹配，也就是虚拟地址如果访问是 1M 物理地址也要是 1M 的位置
     // init_kernel_mapping();
     // open_mmu_page();
