@@ -9,6 +9,7 @@
 #include <task/list.h>
 #include <memory/memory_manager.h>
 #include <base/asm_instruct.h>
+#include <ipc/mutex.h>
 
 #define PAGE_SIZE 0x1000
 
@@ -21,6 +22,7 @@ extern void task_switch(task_t *next);
 
 int number = 0;
 
+static mutex_t mutex;
 void schedule()
 {
     bool state = enter_critical_protection(); // 
@@ -67,18 +69,19 @@ u32_t idle_task_work()
 }
 
 void number_add(){
-    bool state = enter_critical_protection(); // 
+    mutex_lock(&mutex);
     number = number + 1;
-    leave_critical_protection(state);
+    mutex_unlock(&mutex);
 }
 
 u32_t thread_b()
 {
-    for (size_t i = 0; i < 1000000; i++)
+    for (size_t i = 0; i < 10000; i++)
     {
         number_add();
+        printk("B ---> %d\r\n", number);
     }
-    printk("B ---> %d\r\n", number);
+    
     while (true)
     {
        hlt();
@@ -87,11 +90,12 @@ u32_t thread_b()
 
 u32_t thread_c()
 {
-    for (size_t i = 0; i < 1000000; i++)
+    for (size_t i = 0; i < 10000; i++)
     {
         number_add();
+        printk("C ---> %d\r\n", number);
     }
-    printk("C ---> %d\r\n", number);
+    
     while (true)
     {
        hlt();
@@ -126,6 +130,7 @@ void init_task_manager() {
 
 void task_init()
 {
+    mutex_init(&mutex);
     task_t * idle_task = alloc_a_page();
     task_create(idle_task, idle_task_work);
     task_t * b = alloc_a_page();
@@ -153,6 +158,9 @@ void task_sleep(u32_t sleep_time) {
 
 // 进程唤醒
 void task_weakup() {
+    if (list_is_empty(&task_manager.wait_list)) {
+        return;
+    }
     list_node_t* wait_node = list_header(&task_manager.wait_list);
     task_t *wait_task = STRUCT_ADDR_BY_FILED_ADDR(wait_node, list_node, task_t);
     if (jiffies >= wait_task->sleep_stop_jiffies) {
@@ -160,4 +168,26 @@ void task_weakup() {
         list_remove_header(&task_manager.wait_list);
         list_add_tail(&task_manager.ready_list, wait_node);
     }
+}
+
+// 获取当前正在运行的进程
+task_t* current_running_task() {
+    list_node_t* running_node = list_header(&task_manager.running_list);
+    task_t *running_task = STRUCT_ADDR_BY_FILED_ADDR(running_node, list_node, task_t);
+    assert(running_task != nullptr);
+    return running_task;
+}
+
+// 设置当前进程为 block
+void set_task_block(task_t* task) {
+    task->state == TASK_BLOCKED;
+    list_remove(&task_manager.ready_list, &task->list_node);
+    task->ticks = 1;
+    schedule();
+}
+
+// 设置当前进程为 ready
+void set_task_ready(task_t* task) {
+    task->state == TASK_READY;
+    list_add_tail(&task_manager.ready_list, &task->list_node);
 }

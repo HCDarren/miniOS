@@ -67,6 +67,8 @@ typedef struct task_manager
     list_t running_list;
     // 等待队列：睡眠等待，等待磁盘数据都可以放等待队列，还可以新增睡眠队列，后面再看吧
     list_t wait_list;
+    // 阻塞队列
+    list_t block_list;
     // 准备对列
     list_t ready_list;
     // 所有进程对列
@@ -97,5 +99,14 @@ void task_yield();
 
 // 调度
 void schedule();
+
+// 获取当前正在运行的进程
+task_t* current_running_task();
+
+// 设置进程为 block
+void set_task_block(task_t* task);
+
+// 设置进程为 ready
+void set_task_ready(task_t* task);
 
 #endif

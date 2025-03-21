@@ -1,4 +1,4 @@
-### 参考书籍：排序不分先后，大家找自己合适的  
+### 参考书籍：排序不分先后
 《编码：隐匿在计算机软硬件背后的语言》  
 《穿越计算机的迷雾（第二版）》  
 《汇编语言》  
@@ -25,11 +25,12 @@
 [5. 配置 C 调试环境](https://github.com/HCDarren/miniOS/blob/master/docs/5.%E9%85%8D%E7%BD%AE%20C%20%E8%B0%83%E8%AF%95%E7%8E%AF%E5%A2%83.md)  
 [6. 玩转 C 语言](https://github.com/HCDarren/miniOS/blob/master/docs/6.%E7%8E%A9%E8%BD%AC%20C%20%E8%AF%AD%E8%A8%80.md)  
 [7. 实现内核屏幕驱动](https://github.com/HCDarren/miniOS/blob/master/docs/7.%E5%AE%9E%E7%8E%B0%E5%86%85%E6%A0%B8%E5%B1%8F%E5%B9%95%E9%A9%B1%E5%8A%A8.md)  
+[8. 中断](https://github.com/HCDarren/miniOS/blob/master/docs/8.%E4%B8%AD%E6%96%AD.md)  
 未完结待一点点补充...
 
 ### 视频资料
 [C++ 学习视频(未完结)](https://www.bilibili.com/video/BV1Ga4y1m79j)  
-我的操作系统视频后续补充...  
+操作系统视频后续补充...  
 
 ### 其他视频
 [一个8位二进制CPU的设计和实现](https://www.bilibili.com/video/BV1aP4y1s7Vf)  

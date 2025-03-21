@@ -14,9 +14,9 @@ typedef struct list_node
 typedef struct list
 {
     // 列表的头部
-    list_node_t* head;
+    list_node_t head;
     // 列表的尾部
-    list_node_t* tail;
+    list_node_t tail;
 } list_t;
 
 void list_init(list_t* list);
@@ -34,5 +34,8 @@ void list_add_tail(list_t* list, list_node_t* list_node);
 list_node_t* list_remove_header(list_t* list);
 
 list_node_t* list_remove_tail(list_t* list);
+
+// 移除一个节点
+bool list_remove(list_t* list, list_node_t* list_node);
 
 #endif
