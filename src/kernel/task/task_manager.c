@@ -22,7 +22,6 @@ extern void task_switch(task_t *next);
 
 int number = 0;
 
-static mutex_t mutex;
 void schedule()
 {
     bool state = enter_critical_protection(); // 
@@ -69,9 +68,7 @@ u32_t idle_task_work()
 }
 
 void number_add(){
-    mutex_lock(&mutex);
     number = number + 1;
-    mutex_unlock(&mutex);
 }
 
 u32_t thread_b()
@@ -130,7 +127,6 @@ void init_task_manager() {
 
 void task_init()
 {
-    mutex_init(&mutex);
     task_t * idle_task = alloc_a_page();
     task_create(idle_task, idle_task_work);
     task_t * b = alloc_a_page();

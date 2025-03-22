@@ -1,6 +1,7 @@
 #include <memory/memory_manager.h>
 #include <base/string.h>
 #include <base/assert.h>
+#include <base/asm_instruct.h>
 
 // 内存可用区域，为 1 可用
 #define ZONE_VALID 1
@@ -73,9 +74,17 @@ static void create_memory_mapping(page_mapping_dir_t *page_dir, void *virtual_ad
     }
 }
 
+#define PDE_P (1 << 0)
+#define PDE_W (1 << 1)
+#define PDE_PS (1 << 7)
+
 // 前 4M 给我们的内核用，可以自行设计分配，比如我之前熟悉的 Android 操作系统 1G 给操作系统用，3G 给用户应用
-static void init_kernel_mapping()
+static inline void init_kernel_mapping()
 {
+    u32_t* pdr = (u32_t*)KERNEL_PAGE_DIR;
+    pdr[0] = PDE_P | PDE_W | PDE_PS;
+    u32_t cr4 = read_cr4();
+    write_cr4(cr4 | (1 << 4));
 }
 
 // 设置 cr0 寄存器
@@ -92,13 +101,13 @@ static inline void open_cr0_enable_page()
 
 // 设置 cr3 寄存器
 // 参数是页目录的地址
-static void inline set_cr3(u32_t pde)
+static inline void set_cr3(u32_t pde)
 {
     asm volatile("movl %%eax, %%cr3\n" ::"a"(pde));
 }
 
 // 打开内存分页
-static void open_mmu_page()
+static inline void open_mmu_page()
 {
     set_cr3(KERNEL_PAGE_DIR);
     open_cr0_enable_page();
@@ -139,6 +148,6 @@ void memory_init()
     init_memory_manager_alloc(memory_manager_alloc, bits, max_memory_start, max_memory_size);
     
     // 这里可以再加一些各种检测、通用代码。这里规划是写死了，0M - 4M 给内核了，而且必须要 1-1 匹配，也就是虚拟地址如果访问是 1M 物理地址也要是 1M 的位置
-    // init_kernel_mapping();
-    // open_mmu_page();
+    init_kernel_mapping();
+    open_mmu_page();
 }
