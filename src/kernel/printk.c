@@ -5,11 +5,13 @@
 
 static char buf[1024];
 
+static char* digits[] = {"","","","","","","","","01234567","","0123456789","","","","","","0123456789ABCDEF"};
+
 static char *number(char str[], int num, int scale)
 {
     int len = 0;
     char tmp[36];
-    const char *digits = "0123456789";
+    const char *digit = digits[scale];
 
     if (num == 0)
     {
@@ -21,7 +23,7 @@ static char *number(char str[], int num, int scale)
         {
             int index = num % scale;
             num /= scale;
-            tmp[len++] = digits[index];
+            tmp[len++] = digit[index];
         }
     }
 
