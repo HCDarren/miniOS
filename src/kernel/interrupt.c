@@ -71,8 +71,7 @@ static void init_interrupt_table()
         // 系统段    
         idt->segment = 0;  
         // 有效         
-        idt->present = 1; 
-        
+        idt->present = 1;
         // 设置中断处理函数的位置
         idt->offset0 = (u32_t)interrupt_handler_defalut & 0xffff;
         idt->offset1 = ((u32_t)interrupt_handler_defalut >> 16) & 0xffff;
@@ -129,7 +128,7 @@ void close_cpu_interrupt()
     set_interrupt_state(false);
 }
 
-void do_interrupt_handler_defalut()
+void do_interrupt_handler_defalut(exception_frame_t* exception_frame)
 {
     printk("interrupt_exception!!!\r\n");
 }
@@ -149,6 +148,7 @@ void interrupt_init()
     activate_interrupt_chipset();
     init_interrupt_table();
     open_cpu_interrupt();
+    int i = 2 / 0;
 }
 
 // 关中断的方式进入临界保护区

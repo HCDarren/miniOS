@@ -36,6 +36,14 @@ typedef struct idt_descriptor
     u16_t offset1;    
 } __packed idt_descriptor;
 
+// 发生中断的帧信息
+typedef struct exception_frame
+{
+    u32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
+    u32_t gs, fs, es, ds;
+    u32_t eip, cs, eflags;
+} __packed exception_frame_t;
+
 // 激活初始化中断芯片
 void interrupt_init();
 

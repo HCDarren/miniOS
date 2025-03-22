@@ -105,10 +105,7 @@ static void task_create(task_t *task, void* target)
 
     stack -= sizeof(task_frame_t);
     task_frame_t *frame = (task_frame_t *)stack;
-    frame->ebx = 0x11111111;
-    frame->esi = 0x22222222;
-    frame->edi = 0x33333333;
-    frame->ebp = 0x44444444;
+    frame->ebx = frame->esi = frame->edi = frame->ebp = 0x00000000;
     frame->eip = (void *)target;
 
     task->stack = (u32_t *)stack;

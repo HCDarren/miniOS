@@ -10,7 +10,7 @@
 extern void interrupt_handler_time();
 
 static int index = 0;
-void do_interrupt_handler_time() {
+void do_interrupt_handler_time(exception_frame_t* exception_frame) {
     pic_send_eoi(INTERRUPT_CLOCK_NUMBER);
     open_cpu_interrupt();
     schedule();
