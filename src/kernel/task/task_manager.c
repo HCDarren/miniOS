@@ -2,7 +2,6 @@
 #include <os.h>
 #include <base/assert.h>
 #include <gdt.h>
-#include <tss.h>
 #include <printk.h>
 #include <interrupt.h>
 #include <time.h>
@@ -67,24 +66,6 @@ u32_t idle_task_work()
     }
 }
 
-void number_add(){
-    number = number + 1;
-}
-
-u32_t thread_b()
-{
-    for (size_t i = 0; i < 10000; i++)
-    {
-        number_add();
-        printk("B ---> %d\r\n", number);
-    }
-    
-    while (true)
-    {
-       hlt();
-    }
-}
-
 static void task_create(task_t *task, void* target)
 {
     u32_t stack = (u32_t)task + PAGE_SIZE;
@@ -108,15 +89,38 @@ void init_task_manager() {
     list_init(&task_manager.zombie_list);
 }
 
+// 从内核态切到用户态
+extern void switch_to_user_mode();
+
+void real_init_thread() {
+    u32_t counter = 0;
+
+    char ch;
+    while (true)
+    {
+        int i = 10;
+        int b = 10;
+        printf("-------->\r\n");
+    }
+}
+
+static void init_thread()
+{
+    switch_to_user_mode();
+}
+
 void task_init()
 {
-    task_t * idle_task = alloc_a_page();
-    task_create(idle_task, idle_task_work);
-    task_t * b = alloc_a_page();
-    task_create(b, thread_b);
+    // task_t * idle_task = alloc_a_page();
+    // task_create(idle_task, idle_task_work);
+    // 创建 init_task 准备进入用户态
+    task_t * init_task = alloc_a_page();
+    task_create(init_task, init_thread);
+
     init_task_manager();
-    list_add_tail(&task_manager.ready_list, &idle_task->list_node);
-    list_add_tail(&task_manager.ready_list, &b->list_node);
+    //list_add_tail(&task_manager.ready_list, &idle_task->list_node);
+    //list_add_tail(&task_manager.ready_list, &init_task->list_node);
+    init_thread();
 }
 
 // 进程睡眠：时间毫秒值

@@ -1,6 +1,5 @@
 #ifndef MINIOS_TASK_MANAGER_H
 #define MINIOS_TASK_MANAGER_H
-#include <tss.h>
 #include <os.h>
 #include <task/list.h>
 

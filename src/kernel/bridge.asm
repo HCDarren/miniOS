@@ -30,6 +30,27 @@ task_switch:
     pop ebp
     ret
 
+extern real_init_thread
+extern alloc_a_page
+USER_CODE_SELECTOR equ ((4 << 3) | 0b11)
+USER_DATA_SELECTOR equ ((5 << 3) | 0b11)
+eflags equ (0 << 12 | 0b10 | 1 << 9)
+; ss
+; esp 
+; eflags
+; cs
+; eip
+global switch_to_user_mode
+switch_to_user_mode:
+    call alloc_a_page
+    push USER_DATA_SELECTOR
+    push eax
+    push (0 << 12 | 0b10 | 1 << 9)
+    push USER_CODE_SELECTOR
+    push real_init_thread
+    iret
+
+
 %macro INTERRUPT_HANDLER 1
 extern do_interrupt_handler_%1
 global interrupt_handler_%1

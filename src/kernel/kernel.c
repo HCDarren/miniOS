@@ -14,6 +14,7 @@ int os_magic = OS_MAGIC;
 
 
 void kernel_init(){
+    gdt_init();
     console_init();
     memory_init();
     interrupt_init();

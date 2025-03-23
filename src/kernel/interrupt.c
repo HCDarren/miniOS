@@ -71,7 +71,8 @@ static void init_interrupt_table()
         // 系统段    
         idt->segment = 0;  
         // 有效         
-        idt->present = 1;
+        idt->present = 1; 
+        
         // 设置中断处理函数的位置
         idt->offset0 = (u32_t)interrupt_handler_defalut & 0xffff;
         idt->offset1 = ((u32_t)interrupt_handler_defalut >> 16) & 0xffff;

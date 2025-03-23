@@ -4,10 +4,22 @@
 
 #define GDT_TABLE_SIZE 128
 
-// 内核数据段的选择子
-#define KERNEL_CODE_SELECTOR (1 << 3)
+#define KERNEL_CODE_INDEX 1
+#define KERNEL_DATA_INDEX 2
+#define KERNEL_TSS_INDEX 3
+#define USER_CODE_INDEX 4
+#define USER_DATA_INDEX 5
+
 // 内核代码段的选择子
-#define KERNEL_DATA_SELECTOR (2 << 3)
+#define KERNEL_CODE_SELECTOR (KERNEL_CODE_INDEX << 3)
+// 内核数据段的选择子
+#define KERNEL_DATA_SELECTOR (KERNEL_DATA_INDEX << 3)
+// 内核 tss 段选择子
+#define KERNEL_TSS_SELECTOR (KERNEL_TSS_INDEX << 3)
+// 用户代码段的选择子
+#define USER_CODE_SELECTOR (USER_CODE_INDEX << 3 | 0b11)
+// 用户数据段的选择子
+#define USER_DATA_SELECTOR (USER_DATA_INDEX << 3 | 0b11)
 
 enum DLP {
     DPL_0 = 0,
@@ -44,6 +56,36 @@ typedef struct gdt_descriptor
     // 基地址 24 ~ 31 位
     unsigned char base_high;
 } __packed gdt_descriptor_t;
+
+typedef struct task_state_segment {
+    // 上一个任务的指针
+    u32_t previous_task_link;
+    // 三个不同优先级的栈
+    u32_t* esp0;
+    u32_t ss0;
+    u32_t* esp1;
+    u32_t ss1;
+    u32_t* esp2;
+    u32_t ss2;
+    // 跟虚拟内存有关，指向页表
+    u32_t cr3;
+    // 当前任务运行的代码位置
+    u32_t* eip;
+    // 标识位寄存器
+    u32_t eflags;
+    // 通用寄存器
+    u32_t eax, ecx, edx, ebx;
+    u32_t* esp;
+    u32_t ebp, esi, edi;
+    // 段寄存器
+    u32_t es, cs, ss ,ds, fs, gs;
+    // ldt 表
+    u32_t ldt;
+    // io 位图
+    u32_t io_base;
+    // 任务影子栈指针，用不上
+    u32_t ssp;
+} __packed tss_t;
 
 // 段选择子
 typedef struct gdt_selector

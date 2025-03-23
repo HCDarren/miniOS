@@ -106,6 +106,7 @@ static void create_memory_mapping(page_mapping_dir_t *page_dir, void *virtual_ad
         assert(page_mapping_table->present == 0);
         page_mapping_table->present = 1;
         page_mapping_table->read_write = 1;
+        page_mapping_table->user_mode_acc = 1;
         virtual_addr += PAGE_SIZE;
         physics_addr += PAGE_SIZE;
     }

@@ -44,6 +44,16 @@ typedef struct exception_frame
     u32_t eip, cs, eflags;
 } __packed exception_frame_t;
 
+// 返回用户模式的中断帧
+typedef struct intrrupt_frame
+{
+    u32_t eip;
+    u32_t cs;
+    u32_t eflags;
+    u32_t esp;
+    u32_t ss;
+} intrrupt_frame_t;
+
 // 激活初始化中断芯片
 void interrupt_init();
 
