@@ -34,7 +34,7 @@ static char *number(char str[], int num, int scale)
     return str;
 }
 
-static int vsprintf(char buf[], const char *format, va_list args)
+int vsprintf(char buf[], const char *format, va_list args)
 {
     char *str;
     int num = 0;

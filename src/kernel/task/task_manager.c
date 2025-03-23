@@ -9,6 +9,7 @@
 #include <memory/memory_manager.h>
 #include <base/asm_instruct.h>
 #include <ipc/mutex.h>
+#include <lib/printf.h>
 
 #define PAGE_SIZE 0x1000
 
@@ -17,13 +18,14 @@ static task_manager_t task_manager;
 // 系统总的运行时间片
 static u32_t jiffies = 0;
 
+static task_t* idle_task;
+
 extern void task_switch(task_t *next);
 
 int number = 0;
 
 void schedule()
 {
-    bool state = enter_critical_protection(); // 
     jiffies++;
     // 处理等待队列
     task_weakup();
@@ -38,21 +40,21 @@ void schedule()
 
     if (running_node != nullptr) {
         task_t *running_task = STRUCT_ADDR_BY_FILED_ADDR(running_node, list_node, task_t);
+        // 加个 assert ，代码没怎么测试过
+        assert(((u32_t)running_task & 0x07) == 0);
         --running_task->ticks;
         running_task->jiffies++;
-        if (running_task->ticks == 0) {
+        if (running_task->ticks == 0 || running_task == idle_task) {
             running_task->ticks = TASK_DEFUALT_TICKS;
             list_remove_header(&task_manager.ready_list);
             list_remove_header(&task_manager.running_list);
             list_add_tail(&task_manager.ready_list, &running_task->list_node);
             list_add_tail(&task_manager.running_list, &ready_task->list_node);
-            leave_critical_protection(state);
             task_switch(ready_task);
         }
     } else {
         list_remove_header(&task_manager.ready_list);
         list_add_tail(&task_manager.running_list, &ready_task->list_node);
-        leave_critical_protection(state);
         task_switch(ready_task);
     }
 }
@@ -101,6 +103,7 @@ void real_init_thread() {
         int i = 10;
         int b = 10;
         printf("-------->\r\n");
+        // asm volatile("int $0x80");
     }
 }
 
@@ -111,16 +114,17 @@ static void init_thread()
 
 void task_init()
 {
-    // task_t * idle_task = alloc_a_page();
-    // task_create(idle_task, idle_task_work);
+    idle_task = alloc_a_page();
+    task_create(idle_task, idle_task_work);
     // 创建 init_task 准备进入用户态
     task_t * init_task = alloc_a_page();
     task_create(init_task, init_thread);
 
+    printk("idle_task -> 0x%x, init_task -> 0x%x", idle_task, init_task);
+
     init_task_manager();
-    //list_add_tail(&task_manager.ready_list, &idle_task->list_node);
-    //list_add_tail(&task_manager.ready_list, &init_task->list_node);
-    init_thread();
+    list_add_tail(&task_manager.ready_list, &idle_task->list_node);
+    list_add_tail(&task_manager.ready_list, &init_task->list_node);
 }
 
 // 进程睡眠：时间毫秒值

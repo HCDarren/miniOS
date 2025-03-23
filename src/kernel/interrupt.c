@@ -61,7 +61,7 @@ static void init_interrupt_table()
     {
         idt_descriptor* idt = &interrupt_table[i];
         // 0 特权级别
-        idt->DPL = 0;
+        idt->DPL = 3;
         // 代码段选择子
         idt->selector = 1 << 3;
         // 保留不用

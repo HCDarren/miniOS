@@ -21,6 +21,16 @@ typedef unsigned short u16_t;
 typedef unsigned int u32_t;
 typedef unsigned long long u64_t;
 
+// 文件句柄描述符
+typedef u32_t fd_t;
+// 三个基本输入输出描述符
+typedef enum std_fd_t
+{
+    stderr, 
+    stdin, // 标准输入
+    stdout, // 标准输出
+} std_fd_t;
+
 // 初始化内核
 void kernel_init();
 

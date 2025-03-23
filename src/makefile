@@ -47,6 +47,7 @@ ${BUILD}/kernel/kernel.bin: ${BUILD}/kernel/kernel.o \
 	${BUILD}/kernel/base/asm_instruct.o \
 	${BUILD}/kernel/ipc/mutex.o \
 	${BUILD}/kernel/sys_call.o \
+	${BUILD}/kernel/lib/printf.o \
 
 	$(shell mkdir -p ${dir $@})
 	x86_64-elf-ld -m elf_i386 -static $^ -o $@ -Ttext $(ENTRYPOINT)
