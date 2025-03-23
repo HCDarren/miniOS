@@ -59,3 +59,4 @@ interrupt_handler_%1:
 
 INTERRUPT_HANDLER defalut
 INTERRUPT_HANDLER time
+INTERRUPT_HANDLER syscall

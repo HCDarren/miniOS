@@ -18,7 +18,7 @@
 // 中断的向量表的起始位置，覆盖 bios 的中断向量数据
 #define INTERRUPT_TABLE_START 0x00000000
 // 中断向量表的长度 1K / 8 = 128
-#define INTERRUPT_TABLE_LENGTH 128
+#define INTERRUPT_TABLE_LENGTH 256
 
 static idt_descriptor_ptr idt_ptr;
 
@@ -77,7 +77,7 @@ static void init_interrupt_table()
         idt->offset1 = ((u32_t)interrupt_handler_defalut >> 16) & 0xffff;
     }
 
-    idt_ptr.limit = 0x3FF;
+    idt_ptr.limit = 0x7FF;
     idt_ptr.base = INTERRUPT_TABLE_START;
 
     asm volatile("lidt idt_ptr\n");
@@ -94,7 +94,7 @@ static void set_interrupt_state(bool state)
 
 // 注册中断处理函数
 void register_interrupt_handler(int interrupt_number, interrupt_method_t method) {
-    assert((interrupt_number >= 0) && (interrupt_number <= INTERRUPT_TABLE_LENGTH));
+    assert((interrupt_number >= 0) && (interrupt_number < INTERRUPT_TABLE_LENGTH));
     idt_descriptor *interrupt_table = (idt_descriptor *)INTERRUPT_TABLE_START;
     idt_descriptor* idt = &interrupt_table[interrupt_number];
     // 设置中断处理函数的位置
@@ -148,7 +148,6 @@ void interrupt_init()
     activate_interrupt_chipset();
     init_interrupt_table();
     open_cpu_interrupt();
-    int i = 2 / 0;
 }
 
 // 关中断的方式进入临界保护区

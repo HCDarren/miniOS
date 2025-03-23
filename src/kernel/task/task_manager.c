@@ -85,20 +85,6 @@ u32_t thread_b()
     }
 }
 
-u32_t thread_c()
-{
-    for (size_t i = 0; i < 10000; i++)
-    {
-        number_add();
-        printk("C ---> %d\r\n", number);
-    }
-    
-    while (true)
-    {
-       hlt();
-    }
-}
-
 static void task_create(task_t *task, void* target)
 {
     u32_t stack = (u32_t)task + PAGE_SIZE;
@@ -128,12 +114,9 @@ void task_init()
     task_create(idle_task, idle_task_work);
     task_t * b = alloc_a_page();
     task_create(b, thread_b);
-    task_t * c = alloc_a_page();
-    task_create(c, thread_c);
     init_task_manager();
     list_add_tail(&task_manager.ready_list, &idle_task->list_node);
     list_add_tail(&task_manager.ready_list, &b->list_node);
-    list_add_tail(&task_manager.ready_list, &c->list_node);
 }
 
 // 进程睡眠：时间毫秒值

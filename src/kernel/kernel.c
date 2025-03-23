@@ -5,6 +5,7 @@
 #include <time.h>
 #include <task/task_manager.h>
 #include <gdt.h>
+#include <sys_call.h>
 #include <base/assert.h>
 #include <base/asm_instruct.h>
 #include <memory/memory_manager.h>
@@ -16,10 +17,7 @@ void kernel_init(){
     console_init();
     memory_init();
     interrupt_init();
+    syscall_init();
     task_init();
     time_init();
-    while (true)
-    {
-        hlt();
-    }
 }
