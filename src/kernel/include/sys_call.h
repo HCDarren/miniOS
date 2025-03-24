@@ -13,7 +13,7 @@ typedef enum syscall_t
 
 void syscall_init();
 
-
-u32_t write(fd_t fd, char *buf, u32_t len);
+// 三个参数的系统调用
+u32_t syscall3(u32_t nr, u32_t arg1, u32_t arg2, u32_t arg3);
 
 #endif

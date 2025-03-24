@@ -21,6 +21,8 @@ typedef unsigned short u16_t;
 typedef unsigned int u32_t;
 typedef unsigned long long u64_t;
 
+typedef void* sys_call_method_t;
+
 // 文件句柄描述符
 typedef u32_t fd_t;
 // 三个基本输入输出描述符

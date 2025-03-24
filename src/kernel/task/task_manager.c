@@ -108,12 +108,13 @@ void real_init_thread() {
     u32_t counter = 0;
 
     char ch;
+    int a = 10;
+    int b = 10;
     while (true)
     {
-        int i = 10;
-        int b = 10;
-        printf("-------->\r\n");
-        // asm volatile("int $0x80");
+        a++;
+        b++;
+        printf("-------->a = %d, b = %d\r\n", a, b);
     }
 }
 
