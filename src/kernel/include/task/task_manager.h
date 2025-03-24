@@ -16,6 +16,9 @@
 
 #define TASK_NAME_SIZE 32
 
+#define KERNEL_USER 0
+#define NORMAL_USER 1
+
 typedef enum task_state
 {
     // 初始化
@@ -76,7 +79,7 @@ typedef struct task_manager
     list_t zombie_list;
 } task_manager_t;
 
-typedef struct task_frame_t
+typedef struct task_frame
 {
     u32_t edi;
     u32_t esi;

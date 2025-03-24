@@ -6,13 +6,12 @@ gdt_descriptor_t gdt_table[GDT_TABLE_SIZE] = {0};
 // 内核全局描述符表指针
 gdt_descriptor_pointer_t gdt_ptr;
 // 所有任务共用一个 tss
-static tss_t tss;
+tss_t tss;
 
 static void init_tss() {
     memset(&tss, 0, sizeof(tss_t));
     // 主要是为了设置 ss0 用于进内核优先级切换
     tss.ss0 = KERNEL_DATA_SELECTOR;
-    tss.esp0 = alloc_a_page();
     tss.io_base = sizeof(tss_t);
     gdt_descriptor_t * gdt_descriptor = &gdt_table[KERNEL_TSS_INDEX];
     // 设置 base 、limit

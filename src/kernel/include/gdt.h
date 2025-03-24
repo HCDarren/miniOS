@@ -61,11 +61,11 @@ typedef struct task_state_segment {
     // 上一个任务的指针
     u32_t previous_task_link;
     // 三个不同优先级的栈
-    u32_t* esp0;
+    u32_t esp0;
     u32_t ss0;
-    u32_t* esp1;
+    u32_t esp1;
     u32_t ss1;
-    u32_t* esp2;
+    u32_t esp2;
     u32_t ss2;
     // 跟虚拟内存有关，指向页表
     u32_t cr3;

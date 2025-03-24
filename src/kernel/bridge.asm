@@ -32,9 +32,8 @@ task_switch:
 
 extern real_init_thread
 extern alloc_a_page
-USER_CODE_SELECTOR equ ((4 << 3) | 0b11)
-USER_DATA_SELECTOR equ ((5 << 3) | 0b11)
-eflags equ (0 << 12 | 0b10 | 1 << 9)
+user_code_selector equ (4 << 3 | 0b11)
+user_data_selector equ (5 << 3 | 0b11)
 ; ss
 ; esp 
 ; eflags
@@ -42,14 +41,21 @@ eflags equ (0 << 12 | 0b10 | 1 << 9)
 ; eip
 global switch_to_user_mode
 switch_to_user_mode:
+    ;存用户栈位置的
+    push user_data_selector
+    ; 创建用户栈
     call alloc_a_page
-    push USER_DATA_SELECTOR
+    add eax, 0x1000
     push eax
-    push (0 << 12 | 0b10 | 1 << 9)
-    push USER_CODE_SELECTOR
+    pushf
+    push user_code_selector
     push real_init_thread
+    mov ax, user_data_selector
+    mov gs, ax
+    mov fs, ax
+    mov es, ax
+    mov ds, ax
     iret
-
 
 %macro INTERRUPT_HANDLER 1
 extern do_interrupt_handler_%1

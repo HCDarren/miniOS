@@ -22,7 +22,10 @@ static task_t* idle_task;
 
 extern void task_switch(task_t *next);
 
-int number = 0;
+// 从内核态切到用户态
+extern void switch_to_user_mode();
+
+extern tss_t tss;
 
 void schedule()
 {
@@ -50,6 +53,12 @@ void schedule()
             list_remove_header(&task_manager.running_list);
             list_add_tail(&task_manager.ready_list, &running_task->list_node);
             list_add_tail(&task_manager.running_list, &ready_task->list_node);
+
+            if (ready_task->uid == NORMAL_USER) {
+                // 用作内核栈了
+                tss.esp0 = (u32_t)ready_task + PAGE_SIZE;
+            }
+
             task_switch(ready_task);
         }
     } else {
@@ -68,7 +77,7 @@ u32_t idle_task_work()
     }
 }
 
-static void task_create(task_t *task, void* target)
+static void task_create(task_t *task, void* target, u32_t uid)
 {
     u32_t stack = (u32_t)task + PAGE_SIZE;
 
@@ -79,6 +88,7 @@ static void task_create(task_t *task, void* target)
 
     task->stack = (u32_t *)stack;
     task->jiffies = 0;
+    task->uid = uid;
     task->priority = 0;
     task->ticks = TASK_DEFUALT_TICKS;
 }
@@ -115,10 +125,10 @@ static void init_thread()
 void task_init()
 {
     idle_task = alloc_a_page();
-    task_create(idle_task, idle_task_work);
+    task_create(idle_task, idle_task_work, KERNEL_USER);
     // 创建 init_task 准备进入用户态
     task_t * init_task = alloc_a_page();
-    task_create(init_task, init_thread);
+    task_create(init_task, init_thread, NORMAL_USER);
 
     printk("idle_task -> 0x%x, init_task -> 0x%x", idle_task, init_task);
 
