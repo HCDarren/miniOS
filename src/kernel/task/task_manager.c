@@ -10,6 +10,7 @@
 #include <base/asm_instruct.h>
 #include <ipc/mutex.h>
 #include <lib/printf.h>
+#include <lib/unistd.h>
 
 #define PAGE_SIZE 0x1000
 
@@ -19,6 +20,10 @@ static task_manager_t task_manager;
 static u32_t jiffies = 0;
 
 static task_t* idle_task;
+
+static mutex_t mutex;
+
+static u32_t task_pid_index = 0;
 
 extern void task_switch(task_t *next);
 
@@ -85,10 +90,10 @@ static void task_create(task_t *task, void* target, u32_t uid)
     task_frame_t *frame = (task_frame_t *)stack;
     frame->ebx = frame->esi = frame->edi = frame->ebp = 0x00000000;
     frame->eip = (void *)target;
-
     task->stack = (u32_t *)stack;
     task->jiffies = 0;
     task->uid = uid;
+    task->pid = task_pid_index++;
     task->priority = 0;
     task->ticks = TASK_DEFUALT_TICKS;
 }
@@ -99,6 +104,7 @@ void init_task_manager() {
     list_init(&task_manager.ready_list);
     list_init(&task_manager.running_list);
     list_init(&task_manager.zombie_list);
+    mutex_init(&mutex);
 }
 
 // 从内核态切到用户态
@@ -108,13 +114,16 @@ void real_init_thread() {
     u32_t counter = 0;
 
     char ch;
-    int a = 10;
     int b = 10;
     while (true)
     {
-        a++;
         b++;
-        printf("-------->a = %d, b = %d\r\n", a, b);
+        pid_t pid = fork();
+        if (pid == 0) {
+            printf("-------->child task pid = %d, ppid = %d", getpid(), getppid());
+        } else if (pid >= 0) {
+            printf("-------->parent task pid = %d, ppid = %d", getpid(), getppid());
+        }
     }
 }
 
@@ -185,4 +194,21 @@ void set_task_block(task_t* task) {
 void set_task_ready(task_t* task) {
     task->state == TASK_READY;
     list_add_tail(&task_manager.ready_list, &task->list_node);
+}
+
+pid_t task_fork() {
+    mutex_lock(&mutex);
+
+    task_t* current = current_running_task();
+
+    // 创建一个新的进程
+    task_t * new_task = alloc_a_page();
+    task_create(new_task, nullptr, NORMAL_USER);
+    //list_add_tail(&task_manager.ready_list, &new_task->list_node);
+    new_task->ppid = current->pid;
+
+    // 拷贝页目录啥的，暂时没有实现，需要有自己的页表这些
+
+    mutex_unlock(&mutex);
+    return new_task->pid;
 }

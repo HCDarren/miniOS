@@ -4,6 +4,7 @@
 #include <base/assert.h>
 #include <memory/memory_manager.h>
 #include <drivers/console.h>
+#include <task/task_manager.h>
 
 // 系统调用方法表的大小
 #define SYS_CALL_SIZE 64
@@ -14,8 +15,23 @@ static void sys_call_default(exception_frame_t* exception_frame) {
     assert(false);
 }
 
-static void sys_nr_write(exception_frame_t* exception_frame){
+static void do_sys_write(exception_frame_t* exception_frame){
     console_write((char*)exception_frame->ecx, exception_frame->edx);
+}
+
+// fork 进程
+static void do_sys_fork(exception_frame_t* exception_frame){
+    exception_frame->eax = task_fork();
+}
+
+// fork 进程
+static void do_sys_getpid(exception_frame_t* exception_frame){
+    exception_frame->eax = current_running_task()->pid;
+}
+
+// fork 进程
+static void do_sys_getppid(exception_frame_t* exception_frame){
+    exception_frame->eax = current_running_task()->ppid;
 }
 
 extern void interrupt_handler_syscall();
@@ -35,7 +51,10 @@ static inline void init_sys_table() {
     {
         sys_call_table[i] = sys_call_default;
     }
-    sys_call_table[SYS_NR_WRITE] = sys_nr_write;
+    sys_call_table[sys_write] = do_sys_write;
+    sys_call_table[sys_fork] = do_sys_fork;
+    sys_call_table[sys_getpid] = do_sys_getpid;
+    sys_call_table[sys_getppid] = do_sys_getppid;
 }
 
 void syscall_init() { 
@@ -46,7 +65,7 @@ void syscall_init() {
 }
 
 // 三个参数的系统调用
-u32_t syscall3(u32_t nr, u32_t arg1, u32_t arg2, u32_t arg3)
+u32_t syscall_3(u32_t nr, u32_t arg1, u32_t arg2, u32_t arg3)
 {
     u32_t ret;
     asm volatile(
@@ -57,7 +76,7 @@ u32_t syscall3(u32_t nr, u32_t arg1, u32_t arg2, u32_t arg3)
 }
 
 // 两个参数的系统调用
-u32_t syscall2(u32_t nr, u32_t arg1, u32_t arg2)
+u32_t syscall_2(u32_t nr, u32_t arg1, u32_t arg2)
 {
     u32_t ret;
     asm volatile(
@@ -68,7 +87,7 @@ u32_t syscall2(u32_t nr, u32_t arg1, u32_t arg2)
 }
 
 // 一个参数的系统调用
-u32_t syscall1(u32_t nr, u32_t arg1)
+u32_t syscall_1(u32_t nr, u32_t arg1)
 {
     u32_t ret;
     asm volatile(
@@ -79,7 +98,7 @@ u32_t syscall1(u32_t nr, u32_t arg1)
 }
 
 // 0个参数的系统调用
-u32_t syscall0(u32_t nr)
+u32_t syscall_0(u32_t nr)
 {
     u32_t ret;
     asm volatile(

@@ -23,6 +23,8 @@ typedef unsigned long long u64_t;
 
 typedef void* sys_call_method_t;
 
+typedef u32_t pid_t;
+
 // 文件句柄描述符
 typedef u32_t fd_t;
 // 三个基本输入输出描述符

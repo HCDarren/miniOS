@@ -52,6 +52,8 @@ typedef struct task_struct
     u32_t priority;
     // 进程 pid
     u32_t pid;
+    // 父进程 pid
+    u32_t ppid;
     // 进程 uid
     u32_t uid;
     // 剩余时间片
@@ -110,5 +112,8 @@ void set_task_block(task_t* task);
 
 // 设置进程为 ready
 void set_task_ready(task_t* task);
+
+// fork 一个进程
+pid_t task_fork();
 
 #endif
