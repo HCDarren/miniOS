@@ -30,10 +30,6 @@ task_switch:
     pop ebp
     ret
 
-extern real_init_thread
-extern alloc_a_page
-user_code_selector equ (4 << 3 | 0b11)
-user_data_selector equ (5 << 3 | 0b11)
 ; ss
 ; esp 
 ; eflags
@@ -41,20 +37,11 @@ user_data_selector equ (5 << 3 | 0b11)
 ; eip
 global switch_to_user_mode
 switch_to_user_mode:
-    ;存用户栈位置的
-    push user_data_selector
-    ; 创建用户栈
-    call alloc_a_page
-    add eax, 0x1000
-    push eax
-    pushf
-    push user_code_selector
-    push real_init_thread
-    mov ax, user_data_selector
-    mov gs, ax
-    mov fs, ax
-    mov es, ax
-    mov ds, ax
+    pop eax
+    pop ds
+    pop es
+    pop fs
+    pop gs
     iret
 
 %macro INTERRUPT_HANDLER 1

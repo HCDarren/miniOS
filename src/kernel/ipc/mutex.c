@@ -14,7 +14,7 @@ void mutex_lock(mutex_t* mutex) {
     if (mutex->owner == NULL || mutex->owner == running_task) {
         mutex->owner = running_task;
     } else {
-        list_add_tail(&mutex->wait_list, &running_task->list_node);
+        list_add_tail(&mutex->wait_list, &running_task->block_list_node);
         set_task_block(running_task);
     }
     leave_critical_protection(state);
@@ -28,7 +28,7 @@ void mutex_unlock(mutex_t* mutex) {
         mutex->owner = nullptr;
         if (!list_is_empty(&mutex->wait_list)) {
             list_node_t* list_node = list_remove_header(&mutex->wait_list);
-            task_t *task = STRUCT_ADDR_BY_FILED_ADDR(list_node, list_node, task_t);
+            task_t *task = STRUCT_ADDR_BY_FILED_ADDR(list_node, block_list_node, task_t);
             set_task_ready(task);
         }
     } else {

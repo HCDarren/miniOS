@@ -1,6 +1,7 @@
 #include <task/task_manager.h>
 #include <os.h>
 #include <base/assert.h>
+#include <base/string.h>
 #include <gdt.h>
 #include <printk.h>
 #include <interrupt.h>
@@ -11,6 +12,7 @@
 #include <ipc/mutex.h>
 #include <lib/printf.h>
 #include <lib/unistd.h>
+#include <lib/sleep.h>
 
 #define PAGE_SIZE 0x1000
 
@@ -32,45 +34,44 @@ extern void switch_to_user_mode();
 
 extern tss_t tss;
 
+void task_yield()
+{
+    // 从对头拿出来一个
+    list_node_t *ready_node = list_header(&task_manager.ready_list);
+    assert(ready_node != nullptr);
+    task_t *ready_task = STRUCT_ADDR_BY_FILED_ADDR(ready_node, list_node, task_t);
+    assert(((u32_t)ready_task & 0x07) == 0);
+    // 切过去
+    task_manager.running_task = ready_task;
+    task_manager.running_task->state = TASK_RUNNING;
+    if (ready_task->user_type == NORMAL_USER)
+    {
+        // 用作内核栈了
+        tss.esp0 = (u32_t)ready_task + PAGE_SIZE;
+    }
+    task_switch(ready_task);
+}
+
 void schedule()
 {
     jiffies++;
     // 处理等待队列
     task_weakup();
-    list_node_t* running_node = list_header(&task_manager.running_list);
-    list_node_t* ready_node = list_header(&task_manager.ready_list);
-
-    if (ready_node == NULL) {
-        return;
-    }
     
-    task_t *ready_task = STRUCT_ADDR_BY_FILED_ADDR(ready_node, list_node, task_t);
+    task_t* running_task = task_manager.running_task;
 
-    if (running_node != nullptr) {
-        task_t *running_task = STRUCT_ADDR_BY_FILED_ADDR(running_node, list_node, task_t);
-        // 加个 assert ，代码没怎么测试过
-        assert(((u32_t)running_task & 0x07) == 0);
+    if (running_task != NULL) {
         --running_task->ticks;
         running_task->jiffies++;
-        if (running_task->ticks == 0 || running_task == idle_task) {
-            running_task->ticks = TASK_DEFUALT_TICKS;
-            list_remove_header(&task_manager.ready_list);
-            list_remove_header(&task_manager.running_list);
-            list_add_tail(&task_manager.ready_list, &running_task->list_node);
-            list_add_tail(&task_manager.running_list, &ready_task->list_node);
-
-            if (ready_task->uid == NORMAL_USER) {
-                // 用作内核栈了
-                tss.esp0 = (u32_t)ready_task + PAGE_SIZE;
-            }
-
-            task_switch(ready_task);
+        if (running_task->ticks > 0) {
+            return;
         }
-    } else {
-        list_remove_header(&task_manager.ready_list);
-        list_add_tail(&task_manager.running_list, &ready_task->list_node);
-        task_switch(ready_task);
+        running_task->ticks = TASK_DEFUALT_TICKS;
+        bool is_removed = list_remove(&task_manager.ready_list, &running_task->list_node);
+        set_task_ready(running_task);
     }
+
+    task_yield();
 }
 
 u32_t idle_task_work()
@@ -78,11 +79,12 @@ u32_t idle_task_work()
     open_cpu_interrupt();
     while (true)
     {
+       current_running_task()->ticks = 1; 
        hlt();
     }
 }
 
-static void task_create(task_t *task, void* target, u32_t uid)
+static void task_create(task_t *task, void* target, u32_t user_type)
 {
     u32_t stack = (u32_t)task + PAGE_SIZE;
 
@@ -92,8 +94,9 @@ static void task_create(task_t *task, void* target, u32_t uid)
     frame->eip = (void *)target;
     task->stack = (u32_t *)stack;
     task->jiffies = 0;
-    task->uid = uid;
+    task->user_type = user_type;
     task->pid = task_pid_index++;
+    task->ppid = 0;
     task->priority = 0;
     task->ticks = TASK_DEFUALT_TICKS;
 }
@@ -102,7 +105,7 @@ void init_task_manager() {
     list_init(&task_manager.all_task_list);
     list_init(&task_manager.wait_list);
     list_init(&task_manager.ready_list);
-    list_init(&task_manager.running_list);
+    task_manager.running_task = NULL;
     list_init(&task_manager.zombie_list);
     mutex_init(&mutex);
 }
@@ -113,23 +116,41 @@ extern void switch_to_user_mode();
 void real_init_thread() {
     u32_t counter = 0;
 
-    char ch;
-    int b = 10;
+    pid_t pid = fork();
+    printf("-------->fork task pid = %d\r\n", pid);
+    printf("-------->fork task pid = %d\r\n", pid);
+
     while (true)
     {
-        b++;
-        pid_t pid = fork();
-        if (pid == 0) {
-            printf("-------->child task pid = %d, ppid = %d", getpid(), getppid());
-        } else if (pid >= 0) {
-            printf("-------->parent task pid = %d, ppid = %d", getpid(), getppid());
-        }
+        printf("-------->fork task pid = %d, counter = %d\r\n", pid, counter++);
+        sleep(1000);
     }
 }
 
 static void init_thread()
 {
-    switch_to_user_mode();
+    task_t* current_task = current_running_task();
+    current_task->user_stack = alloc_a_page();
+
+    user_intrrupt_frame_t user_intrrupt_frame;
+    // 设置各个段寄存器的变量
+    user_intrrupt_frame.eax = 0;
+    user_intrrupt_frame.ss = USER_DATA_SELECTOR;
+    user_intrrupt_frame.cs = USER_CODE_SELECTOR;
+    user_intrrupt_frame.ds = USER_DATA_SELECTOR;
+    user_intrrupt_frame.es = USER_CODE_SELECTOR;
+    user_intrrupt_frame.fs = USER_CODE_SELECTOR;
+    user_intrrupt_frame.gs = USER_CODE_SELECTOR;
+    // 用户栈的 esp 位置
+    user_intrrupt_frame.esp = (u32_t)current_task->user_stack + PAGE_SIZE;
+    user_intrrupt_frame.eip = (u32_t)real_init_thread;
+    user_intrrupt_frame.eflags = (0 << 12 | 0b10 | 1 << 9);
+    
+    void* esp = &user_intrrupt_frame;
+    // 把 user_intr_frame 赋值给 esp
+    asm volatile(
+        "movl %0, %%esp\n\t"
+        "jmp switch_to_user_mode\n\t" ::"m"(esp));
 }
 
 void task_init()
@@ -140,8 +161,6 @@ void task_init()
     task_t * init_task = alloc_a_page();
     task_create(init_task, init_thread, NORMAL_USER);
 
-    printk("idle_task -> 0x%x, init_task -> 0x%x", idle_task, init_task);
-
     init_task_manager();
     list_add_tail(&task_manager.ready_list, &idle_task->list_node);
     list_add_tail(&task_manager.ready_list, &init_task->list_node);
@@ -149,15 +168,29 @@ void task_init()
 
 // 进程睡眠：时间毫秒值
 void task_sleep(u32_t sleep_time) {
-    list_node_t* running_node = list_remove_header(&task_manager.running_list);
-    task_t *running_task = STRUCT_ADDR_BY_FILED_ADDR(running_node, list_node, task_t);
+    mutex_lock(&mutex);
+    task_t *running_task = current_running_task();
     u32_t sleep_jiffies = sleep_time / JIFFY;
     // 最少一个时间片
-    running_task->sleep_stop_jiffies =  sleep_jiffies <= 0 ? (jiffies + 1) : (jiffies + sleep_jiffies);
-    // 这里最好是一个排序插入，先简单写了，时间最短的在最前面
-    list_add_tail(&task_manager.wait_list, running_node);
-    // 直接执行调度，交出 cpu 控制权
-    schedule();
+    running_task->sleep_stop_jiffies = sleep_jiffies <= 0 ? (jiffies + 1) : (jiffies + sleep_jiffies);
+    running_task->state = TASK_SLEEPING;
+    // 进行一个排序，也可以不排序，weakup 的时候遍历
+    list_node_t* anchor_node = list_header(&task_manager.wait_list);
+    while (anchor_node)
+    {
+        task_t *anchor_task = STRUCT_ADDR_BY_FILED_ADDR(anchor_node, list_node, task_t);
+        if (anchor_task->sleep_stop_jiffies > running_task->sleep_stop_jiffies) {
+            break;
+        }
+        anchor_node = anchor_node->next;
+    }
+    if (anchor_node == NULL) {
+        list_add_tail(&task_manager.wait_list, &running_task->wait_list_node);
+    } else {
+        list_insert_before(anchor_node, &running_task->wait_list_node);
+    }
+    set_task_block(running_task);
+    mutex_unlock(&mutex);
 }
 
 // 进程唤醒
@@ -166,28 +199,25 @@ void task_weakup() {
         return;
     }
     list_node_t* wait_node = list_header(&task_manager.wait_list);
-    task_t *wait_task = STRUCT_ADDR_BY_FILED_ADDR(wait_node, list_node, task_t);
+    task_t *wait_task = STRUCT_ADDR_BY_FILED_ADDR(wait_node, wait_list_node, task_t);
     if (jiffies >= wait_task->sleep_stop_jiffies) {
         // 加到就绪队列的尾部
         list_remove_header(&task_manager.wait_list);
-        list_add_tail(&task_manager.ready_list, wait_node);
+        set_task_ready(wait_task);
     }
 }
 
 // 获取当前正在运行的进程
 task_t* current_running_task() {
-    list_node_t* running_node = list_header(&task_manager.running_list);
-    task_t *running_task = STRUCT_ADDR_BY_FILED_ADDR(running_node, list_node, task_t);
-    assert(running_task != nullptr);
-    return running_task;
+    return task_manager.running_task;
 }
 
 // 设置当前进程为 block
 void set_task_block(task_t* task) {
     task->state == TASK_BLOCKED;
-    list_remove(&task_manager.ready_list, &task->list_node);
+    bool is_removed = list_remove(&task_manager.ready_list, &task->list_node);
     task->ticks = 1;
-    schedule();
+    task_yield();
 }
 
 // 设置当前进程为 ready
@@ -196,18 +226,60 @@ void set_task_ready(task_t* task) {
     list_add_tail(&task_manager.ready_list, &task->list_node);
 }
 
+void task_init_new_fork(task_t* fork_task, task_t* parent_task) {
+    // 1、子进程初始化
+    fork_task->jiffies = 0;
+    fork_task->user_type = NORMAL_USER;
+    fork_task->pid = task_pid_index++;
+    fork_task->priority = 0;
+    fork_task->ticks = TASK_DEFUALT_TICKS;
+    fork_task->ppid = parent_task->pid;
+
+    // 2、用户数据栈拷贝
+    fork_task->user_stack = alloc_a_page();
+    memcpy(fork_task->user_stack, parent_task->user_stack, PAGE_SIZE);
+
+    // 3. 返回用户态数据准备
+    u32_t stack = (u32_t)fork_task + PAGE_SIZE;
+    stack -= sizeof(user_intrrupt_frame_t);
+    exception_frame_t* exception_frame = (exception_frame_t*)(tss.esp0 - sizeof(exception_frame_t));
+    user_intrrupt_frame_t* user_intrrupt_frame = (user_intrrupt_frame_t*)stack;
+    user_intrrupt_frame->eax = 0;
+    user_intrrupt_frame->ss = exception_frame->ss;
+    user_intrrupt_frame->cs = exception_frame->cs;
+    user_intrrupt_frame->ds = exception_frame->ds;
+    user_intrrupt_frame->es = exception_frame->es;
+    user_intrrupt_frame->fs = exception_frame->fs;
+    user_intrrupt_frame->gs = exception_frame->gs;
+    // 用户栈的 esp 位置
+    u32_t uesp = (u32_t)fork_task->user_stack + (exception_frame->uesp - (u32_t)parent_task->user_stack);
+    user_intrrupt_frame->esp = uesp;
+    user_intrrupt_frame->eip = exception_frame->eip;
+    user_intrrupt_frame->eflags = exception_frame->eflags;
+
+    // 4. 内核栈数据构造
+    stack -= sizeof(task_frame_t);
+    task_frame_t *frame = (task_frame_t *)stack;
+    frame->edi = exception_frame->edi;
+    frame->esi = exception_frame->esi;
+    frame->ebx = exception_frame->ebx;
+    // 设置调整用户栈 ebp
+    u32_t uebp = (u32_t)fork_task->user_stack + (exception_frame->ebp - (u32_t)parent_task->user_stack);
+    frame->ebp = uebp;
+    frame->eip = switch_to_user_mode;
+    fork_task->stack = (u32_t *)stack;
+
+    // 待完善：拷贝页目录啥的，暂时没有实现，读时共享写时复制，需要有自己的页表这些，后续有时间再去弄，暂时不影响
+}
+
 pid_t task_fork() {
     mutex_lock(&mutex);
 
-    task_t* current = current_running_task();
-
+    task_t* current_task = current_running_task();
     // 创建一个新的进程
     task_t * new_task = alloc_a_page();
-    task_create(new_task, nullptr, NORMAL_USER);
-    //list_add_tail(&task_manager.ready_list, &new_task->list_node);
-    new_task->ppid = current->pid;
-
-    // 拷贝页目录啥的，暂时没有实现，需要有自己的页表这些
+    task_init_new_fork(new_task, current_task);
+    list_add_tail(&task_manager.ready_list, &new_task->list_node);
 
     mutex_unlock(&mutex);
     return new_task->pid;

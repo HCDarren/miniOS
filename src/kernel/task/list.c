@@ -80,3 +80,10 @@ bool list_remove(list_t* list, list_node_t* list_node){
     current->next->previous = current->previous;
     return true;
 }
+
+void list_insert_before(list_node_t* anchor_node, list_node_t* list_node) {
+    list_node->previous = anchor_node->previous;
+    list_node->next = anchor_node;
+    anchor_node->previous->next = anchor_node;
+    anchor_node->previous = list_node;
+}

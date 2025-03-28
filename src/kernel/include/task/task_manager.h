@@ -16,8 +16,12 @@
 
 #define TASK_NAME_SIZE 32
 
-#define KERNEL_USER 0
-#define NORMAL_USER 1
+typedef enum user_type {
+    // 内核用户
+    KERNEL_USER,
+    // 普通用户
+    NORMAL_USER
+} user_type_t;
 
 typedef enum task_state
 {
@@ -31,8 +35,6 @@ typedef enum task_state
     TASK_BLOCKED,
     // 睡眠  
     TASK_SLEEPING, 
-    // 等待
-    TASK_WAITING, 
     // 死亡 
     TASK_DIED,     
 } task_state_t;
@@ -42,8 +44,14 @@ typedef struct task_struct
 {
     // 内核栈
     u32_t *stack;
+    // 用户进程用户栈的开始位置
+    void *user_stack;
     // 取巧的方式放一个 list_node 用于进程管理
     list_node_t list_node;
+    // 用于锁
+    list_node_t block_list_node;
+    // 用于 sleep 等待队列
+    list_node_t wait_list_node;
     // 当前任务的状态
     task_state_t state;
     // 任务的名字
@@ -54,21 +62,21 @@ typedef struct task_struct
     u32_t pid;
     // 父进程 pid
     u32_t ppid;
-    // 进程 uid
-    u32_t uid;
+    // 进程用户类型
+    user_type_t user_type;
     // 剩余时间片
     u32_t ticks;
     // 当前进程获取到的时间片
     u32_t jiffies;
     // 睡眠结束的时间片
     u32_t sleep_stop_jiffies;
-} task_t;
+} __packed task_t;
 
 // 进程管理
 typedef struct task_manager
 {
-    // 正在运行的队列
-    list_t running_list;
+    // 正在运行的 task
+    task_t* running_task;
     // 等待队列：睡眠等待，等待磁盘数据都可以放等待队列，还可以新增睡眠队列，后面再看吧
     list_t wait_list;
     // 阻塞队列
@@ -89,6 +97,22 @@ typedef struct task_frame
     u32_t ebp;
     void (*eip)(void);
 } task_frame_t;
+
+// 中断回到用户态的中断帧
+typedef struct user_intrrupt_frame
+{
+    u32_t eax;
+    u32_t ds;
+    u32_t es;
+    u32_t fs;
+    u32_t gs;
+
+    u32_t eip;
+    u32_t cs;
+    u32_t eflags;
+    u32_t esp;
+    u32_t ss;
+} __packed user_intrrupt_frame_t;
 
 void task_init();
 
