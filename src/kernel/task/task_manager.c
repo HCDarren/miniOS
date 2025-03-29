@@ -13,6 +13,7 @@
 #include <lib/printf.h>
 #include <lib/unistd.h>
 #include <lib/sleep.h>
+#include <lib/exit.h>
 
 #define PAGE_SIZE 0x1000
 
@@ -116,18 +117,18 @@ extern void switch_to_user_mode();
 void real_init_thread() {
     u32_t counter = 0;
 
-    pid_t pid = fork();
-    printf("-------->fork task pid = %d\r\n", pid);
-    printf("-------->fork task pid = %d\r\n", pid);
+    
 
     while (true)
     {
-        printf("-------->fork task pid = %d, counter = %d\r\n", pid, counter++);
-        if (pid > 0) {
-            sleep(1000);
+        pid_t pid = fork();
+        if (pid == 0) {
+            printf("child process: %d\r\n", pid);
+            exit(0);
         } else {
-            sleep(500);
+            printf("parent process: %d\r\n", pid);
         }
+        sleep(1000);
     }
 }
 
@@ -277,4 +278,15 @@ pid_t task_fork() {
 
     mutex_unlock(&mutex);
     return new_task->pid;
+}
+
+// 进程退出
+void task_exit() {
+    task_t* current_task = current_running_task();
+    current_task->state == TASK_DIED;
+    bool is_removed = list_remove(&task_manager.ready_list, &current_task->list_node);
+    assert(is_removed == true);
+    free_a_page(current_task->user_stack);
+    free_a_page(current_task);
+    task_yield();
 }

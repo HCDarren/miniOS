@@ -51,6 +51,7 @@ ${BUILD}/kernel/kernel.bin: ${BUILD}/kernel/kernel.o \
 	${BUILD}/kernel/lib/unistd.o \
 	${BUILD}/kernel/lib/sleep.o \
 	${BUILD}/kernel/lib/fork.o \
+	${BUILD}/kernel/lib/exit.o \
 
 	$(shell mkdir -p ${dir $@})
 	x86_64-elf-ld -m elf_i386 -static $^ -o $@ -Ttext $(ENTRYPOINT)

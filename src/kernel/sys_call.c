@@ -39,6 +39,10 @@ static void do_sys_sleep(exception_frame_t* exception_frame) {
     exception_frame->eax = 0;
 }
 
+static void do_sys_exit(exception_frame_t* exception_frame) {
+    task_exit();
+}
+
 extern void interrupt_handler_syscall();
 
 // 系统调用处理函数
@@ -61,6 +65,7 @@ static inline void init_sys_table() {
     sys_call_table[sys_getpid] = do_sys_getpid;
     sys_call_table[sys_getppid] = do_sys_getppid;
     sys_call_table[sys_sleep] = do_sys_sleep;
+    sys_call_table[sys_exit] = do_sys_exit;
 }
 
 void syscall_init() { 

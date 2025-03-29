@@ -140,4 +140,7 @@ void set_task_ready(task_t* task);
 // fork 一个进程
 pid_t task_fork();
 
+// 进程退出
+void task_exit();
+
 #endif
