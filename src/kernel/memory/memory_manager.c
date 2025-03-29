@@ -19,7 +19,6 @@
 // 内存分配器和位图就放 0x7c00 就是我们原来我们 boot 的位置，反正现在没啥用了
 static memory_manager_alloc_t* memory_manager_alloc;
 
-
 // 设置 cr0 寄存器
 // 最高位 PE 置为 1，启用分页
 static inline void open_cr0_enable_page()

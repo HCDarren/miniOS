@@ -46,6 +46,8 @@ typedef struct task_struct
     u32_t *stack;
     // 用户进程用户栈的开始位置
     void *user_stack;
+    // 每个进程拥有自己的页目录表
+    void* pde;
     // 取巧的方式放一个 list_node 用于进程管理
     list_node_t list_node;
     // 用于锁

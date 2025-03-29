@@ -6,7 +6,7 @@
 // 系统调用号 80
 #define INTERRUPT_SYS_CALL_NUMBER 0x80
 
-typedef enum syscall_t
+typedef enum syscall
 {
     sys_write = 0,
     sys_fork,
@@ -15,7 +15,7 @@ typedef enum syscall_t
     sys_sleep,
     sys_exit,
     sys_execve
-};
+} syscall_t;
 
 void syscall_init();
 

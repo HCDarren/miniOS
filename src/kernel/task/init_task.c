@@ -8,6 +8,9 @@
 #include <lib/exit.h>
 #include <lib/execve.h>
 
+// 用户栈顶 4G
+static u32_t USER_STACK_TOP = 0x0;
+
 void real_init_thread()
 {
     pid_t pid = fork();
@@ -30,9 +33,6 @@ void real_init_thread()
 
 void init_thread()
 {
-    task_t* current_task = current_running_task();
-    current_task->user_stack = alloc_a_page();
-
     user_intrrupt_frame_t user_intrrupt_frame;
     // 设置各个段寄存器的变量
     user_intrrupt_frame.eax = 0;
@@ -43,7 +43,7 @@ void init_thread()
     user_intrrupt_frame.fs = USER_CODE_SELECTOR;
     user_intrrupt_frame.gs = USER_CODE_SELECTOR;
     // 用户栈的 esp 位置
-    user_intrrupt_frame.esp = (u32_t)current_task->user_stack + PAGE_SIZE;
+    user_intrrupt_frame.esp = USER_STACK_TOP;
     user_intrrupt_frame.eip = (u32_t)real_init_thread;
     user_intrrupt_frame.eflags = (0 << 12 | 0b10 | 1 << 9);
     
