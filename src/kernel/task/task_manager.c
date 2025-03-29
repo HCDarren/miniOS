@@ -1,5 +1,6 @@
 #include <task/task_manager.h>
-#include <os.h>
+#include <task/idle_task.h>
+#include <task/init_task.h>
 #include <base/assert.h>
 #include <base/string.h>
 #include <gdt.h>
@@ -10,12 +11,6 @@
 #include <memory/memory_manager.h>
 #include <base/asm_instruct.h>
 #include <ipc/mutex.h>
-#include <lib/printf.h>
-#include <lib/unistd.h>
-#include <lib/sleep.h>
-#include <lib/exit.h>
-
-#define PAGE_SIZE 0x1000
 
 static task_manager_t task_manager;
 
@@ -75,16 +70,6 @@ void schedule()
     task_yield();
 }
 
-u32_t idle_task_work()
-{
-    open_cpu_interrupt();
-    while (true)
-    {
-       current_running_task()->ticks = 1; 
-       hlt();
-    }
-}
-
 static void task_create(task_t *task, void* target, u32_t user_type)
 {
     u32_t stack = (u32_t)task + PAGE_SIZE;
@@ -113,50 +98,6 @@ void init_task_manager() {
 
 // 从内核态切到用户态
 extern void switch_to_user_mode();
-
-void real_init_thread() {
-    u32_t counter = 0;
-
-    
-
-    while (true)
-    {
-        pid_t pid = fork();
-        if (pid == 0) {
-            printf("child process: %d\r\n", pid);
-            exit(0);
-        } else {
-            printf("parent process: %d\r\n", pid);
-        }
-        sleep(1000);
-    }
-}
-
-static void init_thread()
-{
-    task_t* current_task = current_running_task();
-    current_task->user_stack = alloc_a_page();
-
-    user_intrrupt_frame_t user_intrrupt_frame;
-    // 设置各个段寄存器的变量
-    user_intrrupt_frame.eax = 0;
-    user_intrrupt_frame.ss = USER_DATA_SELECTOR;
-    user_intrrupt_frame.cs = USER_CODE_SELECTOR;
-    user_intrrupt_frame.ds = USER_DATA_SELECTOR;
-    user_intrrupt_frame.es = USER_CODE_SELECTOR;
-    user_intrrupt_frame.fs = USER_CODE_SELECTOR;
-    user_intrrupt_frame.gs = USER_CODE_SELECTOR;
-    // 用户栈的 esp 位置
-    user_intrrupt_frame.esp = (u32_t)current_task->user_stack + PAGE_SIZE;
-    user_intrrupt_frame.eip = (u32_t)real_init_thread;
-    user_intrrupt_frame.eflags = (0 << 12 | 0b10 | 1 << 9);
-    
-    void* esp = &user_intrrupt_frame;
-    // 把 user_intr_frame 赋值给 esp
-    asm volatile(
-        "movl %0, %%esp\n\t"
-        "jmp switch_to_user_mode\n\t" ::"m"(esp));
-}
 
 void task_init()
 {

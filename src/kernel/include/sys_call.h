@@ -13,7 +13,8 @@ typedef enum syscall_t
     sys_getpid,
     sys_getppid,
     sys_sleep,
-    sys_exit
+    sys_exit,
+    sys_execve
 };
 
 void syscall_init();

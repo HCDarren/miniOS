@@ -6,8 +6,6 @@
 // 内存可用区域，为 1 可用
 #define ZONE_VALID 1
 
-// 默认页大小一般 4K
-#define PAGE_SIZE 0x1000
 // 内存刚开始可用的起始位置，就从 1M 开始不搞那么麻烦了
 #define MEMORY_VALID_BASE 0x100000
 // 内核内存占用大小

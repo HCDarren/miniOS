@@ -24,6 +24,11 @@ static void do_sys_fork(exception_frame_t* exception_frame){
     exception_frame->eax = task_fork();
 }
 
+// 待完善
+static void do_sys_execve(exception_frame_t* exception_frame) {
+    
+}
+
 // 获取进程id
 static void do_sys_getpid(exception_frame_t* exception_frame){
     exception_frame->eax = current_running_task()->pid;
@@ -66,6 +71,7 @@ static inline void init_sys_table() {
     sys_call_table[sys_getppid] = do_sys_getppid;
     sys_call_table[sys_sleep] = do_sys_sleep;
     sys_call_table[sys_exit] = do_sys_exit;
+    sys_call_table[sys_execve] = do_sys_execve;
 }
 
 void syscall_init() { 

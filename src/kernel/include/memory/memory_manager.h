@@ -5,6 +5,9 @@
 #include <printk.h>
 #include <memory/bitmap.h>
 
+// 默认页大小一般 4K
+#define PAGE_SIZE 0x1000
+
 // 内存管理分配器
 typedef struct memory_manager_alloc
 {
