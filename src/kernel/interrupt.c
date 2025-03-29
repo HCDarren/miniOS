@@ -2,6 +2,8 @@
 #include <drivers/io.h>
 #include <printk.h>
 #include <base/assert.h>
+#include <base/asm_instruct.h>
+#include <memory/memory_manager.h>
 
 #define PIC_M_CTRL 0x20 // 主片的控制端口
 #define PIC_M_DATA 0x21 // 主片的数据端口
@@ -22,7 +24,31 @@
 
 static idt_descriptor_ptr idt_ptr;
 
+// 默认中断函数
 extern void interrupt_handler_defalut();
+// 一般性保护异常函数
+extern void interrupt_handler_general_protection();
+// 页错误中断函数
+extern void interrupt_handler_page_fault();
+
+// 缺页异常
+void do_interrupt_handler_page_fault(exception_frame_t* exception_frame) {
+    // 建立页表映射，输出错误码信息，缺页的地址在寄存器 cr2 中
+    void* page_fault_addr = (void*)read_cr2();
+    page_mapping_dir_t * page_dir = (page_mapping_dir_t *)read_cr3();
+    // 添加一个物理页作为映射
+    void* new_physics_addr = alloc_a_page();
+    // 页往下对其
+    void* virtual_addr = (void*)DOWN_ON(page_fault_addr, PAGE_SIZE);
+    printk("do_interrupt_handler_page_fault: page_fault_addr = 0x%x, page_dir = 0x%x, new_physics_addr = 0x%x, virtual_addr = 0x%x\r\n", page_fault_addr, page_dir, new_physics_addr, virtual_addr);
+    create_memory_mapping(page_dir, (void*)virtual_addr, new_physics_addr, 1);
+    set_cr3(page_dir);
+}
+
+// 一般性保护异常
+void do_interrupt_handler_general_protection(exception_frame_t* exception_frame) {
+    printk("do_interrupt_handler_general_protection\r\n");
+}
 
 // 激活初始化中断芯片组
 // ICW1，OCW2，OCW3 是用偶地址端口主片的 0x20 或从片的 0xA0 写入。
@@ -82,6 +108,9 @@ static void init_interrupt_table()
     idt_ptr.base = INTERRUPT_TABLE_START;
 
     asm volatile("lidt idt_ptr\n");
+
+    register_interrupt_handler(PAGE_FAULT_INTERRUPT_NUMBER, interrupt_handler_page_fault);
+    register_interrupt_handler(GENERAL_PROTECTION_INTERRUPT_NUMBER, interrupt_handler_general_protection);
 }
 
 // 设置 IF 位

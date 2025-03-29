@@ -11,7 +11,7 @@ extern void interrupt_handler_time();
 
 static int index = 0;
 void do_interrupt_handler_time(exception_frame_t* exception_frame) {
-    pic_send_eoi(INTERRUPT_CLOCK_NUMBER);
+    pic_send_eoi(CLOCK_INTERRUPT_NUMBER);
     open_cpu_interrupt();
     schedule();
 }
@@ -23,8 +23,8 @@ void time_init(void) {
     outb(PIT_CHAN0_REG, (CLOCK_COUNTER >> 8) & 0xff);
     
     // 注册时钟中断函数
-    register_interrupt_handler(INTERRUPT_CLOCK_NUMBER, interrupt_handler_time);
+    register_interrupt_handler(CLOCK_INTERRUPT_NUMBER, interrupt_handler_time);
     // 打开时钟中断
-    open_hardware_interrupt(INTERRUPT_CLOCK_NUMBER);
+    open_hardware_interrupt(CLOCK_INTERRUPT_NUMBER);
 }
 

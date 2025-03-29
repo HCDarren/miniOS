@@ -3,8 +3,13 @@
 
 #include <os.h>
 
- // 时钟中断号
-#define INTERRUPT_CLOCK_NUMBER 0x20 
+// 时钟中断号
+#define CLOCK_INTERRUPT_NUMBER 0x20 
+// 一般性保护异常
+#define GENERAL_PROTECTION_INTERRUPT_NUMBER 0xD 
+// 缺页异常中断号
+#define PAGE_FAULT_INTERRUPT_NUMBER 0xE 
+
 
 typedef void *interrupt_method_t; // 中断处理函数
 
@@ -41,6 +46,8 @@ typedef struct exception_frame
 {
     u32_t edi, esi, ebp, esp, ebx, edx, ecx, eax;
     u32_t gs, fs, es, ds;
+    // 错误码
+    u32_t error_code;
     u32_t eip, cs, eflags, uesp, ss;
 } __packed exception_frame_t;
 

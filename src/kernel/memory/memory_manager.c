@@ -16,11 +16,6 @@
 // 根据虚拟地址获取二级页表的索引，中间 10 位是页表索引（21～12）
 #define PTE_INDEX(virtual) (((u32_t)virtual >> 12) & 0x3FF)
 
-// 按 y 对其去掉尾数
-#define DOWN_ON(x, y) (x) & ~((y) - 1)
-// 按 y 对其往上加
-#define UP_ON(x, y) ((x) + (y) - 1) & ~((y) - 1)
-
 // 内存分配器和位图就放 0x7c00 就是我们原来我们 boot 的位置，反正现在没啥用了
 static memory_manager_alloc_t* memory_manager_alloc;
 
@@ -35,13 +30,6 @@ static inline void open_cr0_enable_page()
         "movl %cr0, %eax\n\t"
         "orl $0x80000000, %eax\n\t"
         "movl %eax, %cr0\n\t");
-}
-
-// 设置 cr3 寄存器
-// 参数是页目录的地址
-static inline void set_cr3(u32_t pde)
-{
-    asm volatile("movl %%eax, %%cr3\n" ::"a"(pde));
 }
 
 void* alloc_a_page() {
@@ -94,7 +82,7 @@ static page_mapping_table_t* find_create_page_mapping_table(page_mapping_dir_t *
  * physics_addr 真实的物理地址
  * count 连续映射多长
  */
-static void create_memory_mapping(page_mapping_dir_t *page_dir, void *virtual_addr, void *physics_addr, u32_t count)
+void create_memory_mapping(page_mapping_dir_t *page_dir, void *virtual_addr, void *physics_addr, u32_t count)
 {
     for (size_t i = 0; i < count; i++)
     {
@@ -115,8 +103,8 @@ static inline void init_kernel_mapping()
 {
     page_mapping_dir_t* page_table_dir = alloc_a_page();
     memset(page_table_dir, 0, PAGE_SIZE);
-    create_memory_mapping(page_table_dir, nullptr, nullptr,  KERNEL_MEMORY_SIZE / PAGE_SIZE);
-    set_cr3((u32_t)page_table_dir);
+    create_memory_mapping(page_table_dir, 0, 0,  KERNEL_MEMORY_SIZE / PAGE_SIZE);
+    set_cr3(page_table_dir);
     open_cr0_enable_page();
 }
 

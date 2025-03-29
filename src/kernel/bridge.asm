@@ -44,10 +44,13 @@ switch_to_user_mode:
     pop gs
     iret
 
-%macro INTERRUPT_HANDLER 1
+%macro INTERRUPT_HANDLER 2
 extern do_interrupt_handler_%1
 global interrupt_handler_%1
 interrupt_handler_%1:
+%ifn %2
+    push 0x0
+%endif
     ; 保存上文寄存器信息
     push ds
     push es
@@ -67,10 +70,12 @@ interrupt_handler_%1:
     pop fs
     pop es
     pop ds
-
+    add esp, 4
     iret
 %endmacro
 
-INTERRUPT_HANDLER defalut
-INTERRUPT_HANDLER time
-INTERRUPT_HANDLER syscall
+INTERRUPT_HANDLER defalut, 0
+INTERRUPT_HANDLER time, 0
+INTERRUPT_HANDLER syscall, 0
+INTERRUPT_HANDLER page_fault, 1
+INTERRUPT_HANDLER general_protection, 1

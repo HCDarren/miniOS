@@ -8,6 +8,11 @@
 // 默认页大小一般 4K
 #define PAGE_SIZE 0x1000
 
+// 按 y 对其去掉尾数
+#define DOWN_ON(x, y) (((u32_t)x) & ~((y) - 1))
+// 按 y 对其往上加
+#define UP_ON(x, y) (((x) + (y) - 1) & ~((y) - 1))
+
 // 内存管理分配器
 typedef struct memory_manager_alloc
 {
@@ -70,4 +75,12 @@ void free_pages(void* addr, int free_size);
 
 void memory_init();
 
+/**
+ * 创建一个内存映射
+ * page_dir 页目录表
+ * virtual_addr 虚拟地址
+ * physics_addr 真实的物理地址
+ * count 连续映射多长
+ */
+void create_memory_mapping(page_mapping_dir_t *page_dir, void *virtual_addr, void *physics_addr, u32_t count);
 #endif
