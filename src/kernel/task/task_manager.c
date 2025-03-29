@@ -123,7 +123,11 @@ void real_init_thread() {
     while (true)
     {
         printf("-------->fork task pid = %d, counter = %d\r\n", pid, counter++);
-        sleep(1000);
+        if (pid > 0) {
+            sleep(1000);
+        } else {
+            sleep(500);
+        }
     }
 }
 
@@ -174,23 +178,9 @@ void task_sleep(u32_t sleep_time) {
     // 最少一个时间片
     running_task->sleep_stop_jiffies = sleep_jiffies <= 0 ? (jiffies + 1) : (jiffies + sleep_jiffies);
     running_task->state = TASK_SLEEPING;
-    // 进行一个排序，也可以不排序，weakup 的时候遍历
-    list_node_t* anchor_node = list_header(&task_manager.wait_list);
-    while (anchor_node)
-    {
-        task_t *anchor_task = STRUCT_ADDR_BY_FILED_ADDR(anchor_node, list_node, task_t);
-        if (anchor_task->sleep_stop_jiffies > running_task->sleep_stop_jiffies) {
-            break;
-        }
-        anchor_node = anchor_node->next;
-    }
-    if (anchor_node == NULL) {
-        list_add_tail(&task_manager.wait_list, &running_task->wait_list_node);
-    } else {
-        list_insert_before(anchor_node, &running_task->wait_list_node);
-    }
-    set_task_block(running_task);
+    list_add_tail(&task_manager.wait_list, &running_task->wait_list_node);
     mutex_unlock(&mutex);
+    set_task_block(running_task);
 }
 
 // 进程唤醒
@@ -199,11 +189,15 @@ void task_weakup() {
         return;
     }
     list_node_t* wait_node = list_header(&task_manager.wait_list);
-    task_t *wait_task = STRUCT_ADDR_BY_FILED_ADDR(wait_node, wait_list_node, task_t);
-    if (jiffies >= wait_task->sleep_stop_jiffies) {
-        // 加到就绪队列的尾部
-        list_remove_header(&task_manager.wait_list);
-        set_task_ready(wait_task);
+    while (wait_node && wait_node != &task_manager.wait_list.tail)
+    {
+        task_t *wait_task = STRUCT_ADDR_BY_FILED_ADDR(wait_node, wait_list_node, task_t);
+        if (jiffies >= wait_task->sleep_stop_jiffies) {
+            // 加到就绪队列的尾部
+            list_remove(&task_manager.wait_list, wait_node);
+            set_task_ready(wait_task);
+        }
+        wait_node = wait_node->next;
     }
 }
 

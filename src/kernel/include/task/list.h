@@ -38,7 +38,4 @@ list_node_t* list_remove_tail(list_t* list);
 // 移除一个节点
 bool list_remove(list_t* list, list_node_t* list_node);
 
-// 将节点 list_node 插入到 anchor_node 的前面
-void list_insert_before(list_node_t* anchor_node, list_node_t* list_node);
-
 #endif
