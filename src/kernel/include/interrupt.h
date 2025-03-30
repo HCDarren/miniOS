@@ -5,6 +5,8 @@
 
 // 时钟中断号
 #define CLOCK_INTERRUPT_NUMBER 0x20 
+// 键盘中断号
+#define KEYBORAD_INTERRUPT_NUMBER 0x21
 // 一般性保护异常
 #define GENERAL_PROTECTION_INTERRUPT_NUMBER 0xD 
 // 缺页异常中断号

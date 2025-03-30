@@ -33,6 +33,7 @@ ${BUILD}/kernel/%.o: ${SRC}/kernel/%.c
 ${BUILD}/kernel/kernel.bin: ${BUILD}/kernel/kernel.o \
 	${BUILD}/kernel/drivers/io.o \
 	${BUILD}/kernel/drivers/console.o \
+	${BUILD}/kernel/drivers/keyborad.o \
 	${BUILD}/kernel/printk.o \
 	${BUILD}/kernel/interrupt.o \
 	${BUILD}/kernel/bridge.o \

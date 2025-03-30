@@ -1,5 +1,6 @@
 #include <os.h>
 #include <drivers/console.h>
+#include <drivers/keyborad.h>
 #include <printk.h>
 #include <interrupt.h>
 #include <time.h>
@@ -18,6 +19,7 @@ void kernel_init(){
     memory_init();
     gdt_init();
     interrupt_init();
+    keyborad_init();
     syscall_init();
     task_init();
     time_init();
