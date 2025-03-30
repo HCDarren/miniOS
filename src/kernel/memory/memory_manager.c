@@ -2,6 +2,7 @@
 #include <base/string.h>
 #include <base/assert.h>
 #include <base/asm_instruct.h>
+#include <ipc/mutex.h>
 
 // 内存可用区域，为 1 可用
 #define ZONE_VALID 1
@@ -15,9 +16,13 @@
 #define PDE_INDEX(virtual) ((u32_t)virtual >> 22)
 // 根据虚拟地址获取二级页表的索引，中间 10 位是页表索引（21～12）
 #define PTE_INDEX(virtual) (((u32_t)virtual >> 12) & 0x3FF)
+// 页目录表的数量
+#define PDE_COUNT 1024
 
 // 内存分配器和位图就放 0x7c00 就是我们原来我们 boot 的位置，反正现在没啥用了
 static memory_manager_alloc_t* memory_manager_alloc;
+
+static mutex_t mutex;
 
 // 设置 cr0 寄存器
 // 最高位 PE 置为 1，启用分页
@@ -143,4 +148,52 @@ void memory_init()
     
     // 这里可以再加一些各种检测、通用代码。这里规划是写死了，0M - 4M 给内核了，而且必须要 1-1 匹配，也就是虚拟地址如果访问是 1M 物理地址也要是 1M 的位置
     init_kernel_mapping();
+
+    mutex_init(&mutex);
+}
+
+// 拷贝页表目录
+void* copy_pde() {
+    mutex_lock(&mutex);
+
+    // 创建一个新的页目录
+    page_mapping_dir_t* new_page_dir = alloc_a_page();
+    memset(new_page_dir, 0, PAGE_SIZE);
+
+    u32_t ped_index = PDE_INDEX(USER_TASK_BASE);
+    page_mapping_dir_t* page_dir = (page_mapping_dir_t *)read_cr3();
+    // 0 - 1 G 直接拷贝
+    for (size_t i = 0; i < ped_index; i++, page_dir++)
+    {
+        if (page_dir->present == 0) {
+            continue;
+        }
+        memcpy(&new_page_dir[i], page_dir, sizeof(page_mapping_dir_t));
+    }
+
+    // TODO: 1G - 3G 做读时共享写时复制，暂时不做直接做全部拷贝
+    for (size_t i = ped_index; i < PDE_COUNT; i++, page_dir++)
+    {
+        if (page_dir->present == 0) {
+            continue;
+        }
+        page_mapping_table_t* page_table = (page_mapping_table_t*)(page_dir->phy_pt_addr << 12);
+        for (size_t j = 0; j < PDE_COUNT; j++, page_table++)
+        {
+            if (page_table->present == 0) {
+                continue;
+            }
+            // 首先要计算虚拟地址
+            void* virtual_addr = (void*)(i << 22 | j << 12);
+            void* new_physics_addr = alloc_a_page();
+            // 映射到新的地址上
+            create_memory_mapping(new_page_dir, virtual_addr, new_physics_addr, 1);
+            // 拷贝新的数据
+            memcpy(new_physics_addr, virtual_addr, PAGE_SIZE);
+        }
+    }
+    
+    mutex_unlock(&mutex);
+
+    return new_page_dir;
 }

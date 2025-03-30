@@ -7,9 +7,7 @@
 #include <lib/sleep.h>
 #include <lib/exit.h>
 #include <lib/execve.h>
-
-// 用户栈顶 4G
-static u32_t USER_STACK_TOP = 0x0;
+#include <base/asm_instruct.h>
 
 void real_init_thread()
 {

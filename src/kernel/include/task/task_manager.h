@@ -16,6 +16,11 @@
 
 #define TASK_NAME_SIZE 32
 
+// 1G - 4G 给用户态用，后面可能运行 elf 文件要改，先这样吧。
+#define USER_TASK_BASE 0x40000000 // 1G
+// 用户栈顶 4G
+#define USER_STACK_TOP 0x0
+
 typedef enum user_type {
     // 内核用户
     KERNEL_USER,
@@ -44,8 +49,6 @@ typedef struct task_struct
 {
     // 内核栈
     u32_t *stack;
-    // 用户进程用户栈的开始位置
-    void *user_stack;
     // 每个进程拥有自己的页目录表
     void* pde;
     // 取巧的方式放一个 list_node 用于进程管理

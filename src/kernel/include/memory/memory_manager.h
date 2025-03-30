@@ -83,4 +83,7 @@ void memory_init();
  * count 连续映射多长
  */
 void create_memory_mapping(page_mapping_dir_t *page_dir, void *virtual_addr, void *physics_addr, u32_t count);
+
+// 拷贝页表目录
+void* copy_pde();
 #endif

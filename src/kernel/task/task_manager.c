@@ -40,10 +40,11 @@ void task_yield()
     // 切过去
     task_manager.running_task = ready_task;
     task_manager.running_task->state = TASK_RUNNING;
+    // 用户进程的特殊处理
     if (ready_task->user_type == NORMAL_USER)
     {
-        // 用作内核栈了
         tss.esp0 = (u32_t)ready_task + PAGE_SIZE;
+        set_cr3(ready_task->pde);
     }
     task_switch(ready_task);
 }
@@ -105,6 +106,8 @@ void task_init()
     task_create(idle_task, idle_task_work, KERNEL_USER);
     // 创建 init_task 准备进入用户态
     task_t * init_task = alloc_a_page();
+    // 拷贝一个页目录表给 init_task
+    init_task->pde = copy_pde();
     task_create(init_task, init_thread, NORMAL_USER);
 
     init_task_manager();
@@ -163,17 +166,14 @@ void set_task_ready(task_t* task) {
 }
 
 void task_init_new_fork(task_t* fork_task, task_t* parent_task) {
-    // 1、子进程初始化
-    fork_task->jiffies = 0;
-    fork_task->user_type = NORMAL_USER;
+    // 1、直接从父进程拷贝
+    memcpy(fork_task, parent_task, PAGE_SIZE);
+    // 2、设置 fork 进程的 pid 和 ppid
     fork_task->pid = task_pid_index++;
-    fork_task->priority = 0;
-    fork_task->ticks = TASK_DEFUALT_TICKS;
     fork_task->ppid = parent_task->pid;
-
-    // 2、用户数据栈拷贝
-    fork_task->user_stack = alloc_a_page();
-    memcpy(fork_task->user_stack, parent_task->user_stack, PAGE_SIZE);
+    fork_task->state = TASK_READY;
+    // 3、拷贝页目录表
+    fork_task->pde = copy_pde();
 
     // 3. 返回用户态数据准备
     u32_t stack = (u32_t)fork_task + PAGE_SIZE;
@@ -187,9 +187,7 @@ void task_init_new_fork(task_t* fork_task, task_t* parent_task) {
     user_intrrupt_frame->es = exception_frame->es;
     user_intrrupt_frame->fs = exception_frame->fs;
     user_intrrupt_frame->gs = exception_frame->gs;
-    // 用户栈的 esp 位置
-    u32_t uesp = (u32_t)fork_task->user_stack + (exception_frame->uesp - (u32_t)parent_task->user_stack);
-    user_intrrupt_frame->esp = uesp;
+    user_intrrupt_frame->esp = exception_frame->uesp;
     user_intrrupt_frame->eip = exception_frame->eip;
     user_intrrupt_frame->eflags = exception_frame->eflags;
 
@@ -199,13 +197,9 @@ void task_init_new_fork(task_t* fork_task, task_t* parent_task) {
     frame->edi = exception_frame->edi;
     frame->esi = exception_frame->esi;
     frame->ebx = exception_frame->ebx;
-    // 设置调整用户栈 ebp
-    u32_t uebp = (u32_t)fork_task->user_stack + (exception_frame->ebp - (u32_t)parent_task->user_stack);
-    frame->ebp = uebp;
+    frame->ebp = exception_frame->ebp;
     frame->eip = switch_to_user_mode;
     fork_task->stack = (u32_t *)stack;
-
-    // 待完善：拷贝页目录啥的，暂时没有实现，读时共享写时复制，需要有自己的页表这些，后续有时间再去弄，暂时不影响
 }
 
 pid_t task_fork() {
@@ -227,7 +221,7 @@ void task_exit() {
     current_task->state == TASK_DIED;
     bool is_removed = list_remove(&task_manager.ready_list, &current_task->list_node);
     assert(is_removed == true);
-    free_a_page(current_task->user_stack);
+    // TODO: 释放页目录，页目录和进程私有进程的物理内存也要释放
     free_a_page(current_task);
     task_yield();
 }
