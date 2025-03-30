@@ -52,6 +52,9 @@ int vsprintf(char buf[], const char *format, va_list args)
 
         switch (*format)
         {
+        case 'c':
+            *str++ = (unsigned char)va_arg(args, int);
+        break;
         case 'd':
             num = va_arg(args, int);
             str = number(str, num, 10);
