@@ -1,5 +1,6 @@
 #include <os.h>
 #include <drivers/console.h>
+#include <drivers/console_device.h>
 #include <drivers/keyborad.h>
 #include <printk.h>
 #include <interrupt.h>
@@ -15,6 +16,7 @@ int os_magic = OS_MAGIC;
 
 
 void kernel_init(){
+    install_console_device();
     console_init();
     memory_init();
     gdt_init();

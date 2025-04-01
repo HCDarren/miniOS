@@ -3,6 +3,9 @@
 
 #include <os.h>
 
+// 字符串拷贝
+void strcpy(char dst[], char* src);
+
 // 拷贝数据
 void memcpy(void *dst, const void *src, size_t count);
 

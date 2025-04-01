@@ -3,7 +3,7 @@
 #include <printk.h>
 #include <base/assert.h>
 #include <memory/memory_manager.h>
-#include <drivers/console.h>
+#include <drivers/device.h>
 #include <task/task_manager.h>
 
 // 系统调用方法表的大小
@@ -16,7 +16,9 @@ static void sys_call_default(exception_frame_t* exception_frame) {
 }
 
 static void do_sys_write(exception_frame_t* exception_frame){
-    console_write((char*)exception_frame->ecx, exception_frame->edx);
+    device_t* console_device = device_find(DEVICE_CONSOLE);
+    assert(console_device != nullptr && console_device->write != NULL);
+    console_device->write((char*)exception_frame->ecx, exception_frame->edx);
 }
 
 // fork 进程
