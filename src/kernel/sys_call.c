@@ -20,6 +20,14 @@ static void do_sys_open(exception_frame_t* exception_frame){
     exception_frame->eax = fs_open((const char*)exception_frame->ebx, exception_frame->ecx);
 }
 
+static void do_sys_dup(exception_frame_t* exception_frame){
+    task_t* task = current_running_task();
+    file_t* file = task_get_file(exception_frame->ebx);
+    assert(file != NULL);
+    fd_t new_fd = task_add_file(file);
+    exception_frame->eax = new_fd;
+}
+
 static void do_sys_write(exception_frame_t* exception_frame){
     fs_write(exception_frame->ebx, (char*)exception_frame->ecx, exception_frame->edx);
 }
@@ -78,6 +86,7 @@ static inline void init_sys_table() {
     sys_call_table[sys_sleep] = do_sys_sleep;
     sys_call_table[sys_exit] = do_sys_exit;
     sys_call_table[sys_execve] = do_sys_execve;
+    sys_call_table[sys_dup] = do_sys_dup;
 }
 
 void syscall_init() { 

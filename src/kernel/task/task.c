@@ -227,9 +227,9 @@ void task_exit() {
     task_yield();
 }
 
-int task_add_file(file_t* file) {
+fd_t task_add_file(file_t* file) {
     assert(file != nullptr);
-    int fd = 0;
+    fd_t fd = 0;
     mutex_lock(&mutex);
 
     task_t* task = current_running_task();

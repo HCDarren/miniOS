@@ -12,7 +12,9 @@
 
 void real_init_thread()
 {
-    fopen("/console", 0);
+    fd_t fd = fopen("/dev/console", 0);
+    dup(fd);
+    dup(fd);
     pid_t pid = fork();
     if (pid == 0)
     {

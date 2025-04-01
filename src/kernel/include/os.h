@@ -25,14 +25,16 @@ typedef void* sys_call_method_t;
 
 typedef u32_t pid_t;
 
+typedef u32_t fd_t; 
+
 // 文件句柄描述符
 typedef u32_t fd_t;
 // 三个基本输入输出描述符
 typedef enum std_fd_t
 {
-    stderr, 
-    stdin, // 标准输入
-    stdout, // 标准输出
+    stdin = 0, // 标准输入 0 
+    stdout, // 标准输出 1
+    stderr, // 标准错误 2
 } std_fd_t;
 
 // 初始化内核

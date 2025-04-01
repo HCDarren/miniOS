@@ -154,12 +154,12 @@ pid_t task_fork();
 void task_exit();
 
 // 添加一个文件返回一个文件描述符
-int task_add_file(file_t* file);
+fd_t task_add_file(file_t* file);
 
 // 通过文件描述符获取文件
-file_t* task_get_file(u32_t fd);
+file_t* task_get_file(fd_t fd);
 
 // 根据文件描述符移除一个文件
-void task_remove_file(u32_t fd);
+void task_remove_file(fd_t fd);
 
 #endif

@@ -3,6 +3,8 @@
 
 #include <os.h>
 
-int fopen(const char* file_name, int flags);
+fd_t fopen(const char* file_name, int flags);
+
+fd_t dup(fd_t fd);
 
 #endif
