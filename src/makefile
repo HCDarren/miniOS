@@ -42,7 +42,7 @@ ${BUILD}/kernel/kernel.bin: ${BUILD}/kernel/kernel.o \
 	${BUILD}/kernel/time.o \
 	${BUILD}/kernel/base/assert.o \
 	${BUILD}/kernel/task/list.o \
-	${BUILD}/kernel/task/task_manager.o \
+	${BUILD}/kernel/task/task.o \
 	${BUILD}/kernel/task/idle_task.o \
 	${BUILD}/kernel/task/init_task.o \
 	${BUILD}/kernel/gdt.o \
@@ -57,6 +57,9 @@ ${BUILD}/kernel/kernel.bin: ${BUILD}/kernel/kernel.o \
 	${BUILD}/kernel/lib/sleep.o \
 	${BUILD}/kernel/lib/exit.o \
 	${BUILD}/kernel/lib/execve.o \
+	${BUILD}/kernel/lib/stdio.o \
+	${BUILD}/kernel/fs/fs.o \
+	${BUILD}/kernel/fs/file.o \
 
 	$(shell mkdir -p ${dir $@})
 	x86_64-elf-ld -m elf_i386 -static $^ -o $@ -Ttext $(ENTRYPOINT)

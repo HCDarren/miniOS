@@ -1,4 +1,4 @@
-#include <task/task_manager.h>
+#include <task/task.h>
 #include <task/idle_task.h>
 #include <task/init_task.h>
 #include <base/assert.h>
@@ -86,6 +86,7 @@ static void task_create(task_t *task, void* target, u32_t user_type)
     task->ppid = 0;
     task->priority = 0;
     task->ticks = TASK_DEFUALT_TICKS;
+    memset(task->file_descriptor_table, 0, sizeof(task->file_descriptor_table));
 }
 
 void init_task_manager() {
@@ -224,4 +225,38 @@ void task_exit() {
     // TODO: 释放页目录，页目录和进程私有进程的物理内存也要释放
     free_a_page(current_task);
     task_yield();
+}
+
+int task_add_file(file_t* file) {
+    assert(file != nullptr);
+    int fd = 0;
+    mutex_lock(&mutex);
+
+    task_t* task = current_running_task();
+
+    for (u32_t i = 0; i < FILE_DESCRIPTOR_TABLE_COUNT; i++)
+    {
+        if (task->file_descriptor_table[i] == NULL) {
+            fd = i;
+            task->file_descriptor_table[i] = file;
+            break;
+        }
+    }
+    
+    mutex_unlock(&mutex);
+
+    assert(fd >=0 && fd < FILE_DESCRIPTOR_TABLE_COUNT);
+
+    return fd;
+}
+
+file_t* task_get_file(u32_t fd) {
+    assert(fd >=0 && fd < FILE_DESCRIPTOR_TABLE_COUNT);
+    return current_running_task()->file_descriptor_table[fd];
+}
+
+void task_remove_file(u32_t fd) {
+    assert(fd >=0 && fd < FILE_DESCRIPTOR_TABLE_COUNT);
+    assert(current_running_task()->file_descriptor_table[fd] != NULL);
+    current_running_task()->file_descriptor_table[fd] = NULL;
 }

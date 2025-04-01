@@ -11,6 +11,8 @@ int console_device_write(const void *buf, const u32_t count) {
 }
 
 void install_console_device() {
+    console_init();
+    
     device_t* device = &console_device;
     
     strcpy(device->device_name, "console");

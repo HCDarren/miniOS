@@ -5,31 +5,31 @@
 #define DEVICE_NAME_LENGTH 32
 
 // 设备类型
-enum device_type_t
+typedef enum device_type
 {
     // 字符设备：键盘、控制台
     DEVICE_CHAR = 1,
     // 块设备：磁盘、软盘
     DEVICE_BLOCK,
-};
+} device_type_t;
 
 // 设备号
-enum device_number_t
+typedef enum device_number
 {
     // 控制台
     DEVICE_CONSOLE = 1,
     // 键盘
     DEVICE_KEYBOARD,
-};
+} device_number_t;
 
 // 抽象设备
 typedef struct device
 {
     char device_name[DEVICE_NAME_LENGTH];
     // 设备类型
-    int device_type;
+    device_type_t device_type;
     // 设备号
-    int device_number;
+    device_number_t device_number;
     // 设备控制方法指针
     int (*ioctl)(const int cmd, const void *args, const int flags);
     // 读设备方法指针
@@ -47,6 +47,6 @@ void device_manager_init();
 int device_install(device_t *device);
 
 // 设备查找
-device_t* device_find(int device_number);
+device_t* device_find(device_number_t device_number);
 
 #endif

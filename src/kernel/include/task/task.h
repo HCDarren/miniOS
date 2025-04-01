@@ -2,6 +2,9 @@
 #define MINIOS_TASK_MANAGER_H
 #include <os.h>
 #include <task/list.h>
+#include <fs/file.h>
+
+#define FILE_DESCRIPTOR_TABLE_COUNT 64
 
 // 计算 filed 属性在结构体中的偏移
 #define FIELD_OFFSET_IN_STRUCT(STRUCT_NAME, FIELD_NAME) \
@@ -51,6 +54,8 @@ typedef struct task_struct
     u32_t *stack;
     // 每个进程拥有自己的页目录表
     void* pde;
+    // 每个进程打开的文件描述符表
+    file_t* file_descriptor_table[FILE_DESCRIPTOR_TABLE_COUNT];
     // 取巧的方式放一个 list_node 用于进程管理
     list_node_t list_node;
     // 用于锁
@@ -147,5 +152,14 @@ pid_t task_fork();
 
 // 进程退出
 void task_exit();
+
+// 添加一个文件返回一个文件描述符
+int task_add_file(file_t* file);
+
+// 通过文件描述符获取文件
+file_t* task_get_file(u32_t fd);
+
+// 根据文件描述符移除一个文件
+void task_remove_file(u32_t fd);
 
 #endif

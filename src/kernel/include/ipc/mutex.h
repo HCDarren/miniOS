@@ -1,7 +1,7 @@
 #ifndef MINIOS_MUTEX_H
 #define MINIOS_MUTEX_H
 
-#include<task/task_manager.h>
+#include<task/task.h>
 #include<task/list.h>
 
 // 简单互斥量

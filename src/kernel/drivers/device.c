@@ -25,7 +25,7 @@ int device_install(device_t* device) {
 }
 
 // 设备查找
-device_t* device_find(int device_number) {
+device_t* device_find(device_number_t device_number) {
     for (size_t i = 0; i < DEVICE_NUMBER; i++)
     {
         if (devices[i] != nullptr && devices[i]->device_number == device_number) {

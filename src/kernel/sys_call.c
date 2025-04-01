@@ -4,7 +4,8 @@
 #include <base/assert.h>
 #include <memory/memory_manager.h>
 #include <drivers/device.h>
-#include <task/task_manager.h>
+#include <task/task.h>
+#include <fs/fs.h>
 
 // 系统调用方法表的大小
 #define SYS_CALL_SIZE 64
@@ -15,10 +16,12 @@ static void sys_call_default(exception_frame_t* exception_frame) {
     assert(false);
 }
 
+static void do_sys_open(exception_frame_t* exception_frame){
+    exception_frame->eax = fs_open((const char*)exception_frame->ebx, exception_frame->ecx);
+}
+
 static void do_sys_write(exception_frame_t* exception_frame){
-    device_t* console_device = device_find(DEVICE_CONSOLE);
-    assert(console_device != nullptr && console_device->write != NULL);
-    console_device->write((char*)exception_frame->ecx, exception_frame->edx);
+    fs_write(exception_frame->ebx, (char*)exception_frame->ecx, exception_frame->edx);
 }
 
 // fork 进程
@@ -67,6 +70,7 @@ static inline void init_sys_table() {
     {
         sys_call_table[i] = sys_call_default;
     }
+    sys_call_table[sys_open] = do_sys_open;
     sys_call_table[sys_write] = do_sys_write;
     sys_call_table[sys_fork] = do_sys_fork;
     sys_call_table[sys_getpid] = do_sys_getpid;

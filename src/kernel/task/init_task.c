@@ -1,9 +1,10 @@
 #include <task/init_task.h>
-#include <task/task_manager.h>
+#include <task/task.h>
 #include <gdt.h>
 #include <memory/memory_manager.h>
 #include <lib/printf.h>
 #include <lib/unistd.h>
+#include <lib/stdio.h>
 #include <lib/sleep.h>
 #include <lib/exit.h>
 #include <lib/execve.h>
@@ -11,6 +12,7 @@
 
 void real_init_thread()
 {
+    fopen("/console", 0);
     pid_t pid = fork();
     if (pid == 0)
     {
@@ -22,7 +24,6 @@ void real_init_thread()
     {
         printf("parent process: %d\r\n", pid);
     }
-
     while (true)
     {
         sleep(1000);

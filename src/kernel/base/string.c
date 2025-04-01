@@ -10,6 +10,13 @@ void memcpy(void *dst, const void *src, size_t count) {
     }
 }
 
+int strcmp(const char *s1, const char *s2) {
+    while (*s1 && (*s1 == *s2)) {
+        s1++;
+        s2++;
+    }
+    return *(const unsigned char *)s1 - *(const unsigned char *)s2;
+}
 
 void strcpy(char dst[], char* src) {
     assert(dst != NULL && src != NULL);
