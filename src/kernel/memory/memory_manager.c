@@ -91,7 +91,7 @@ void create_memory_mapping(page_mapping_dir_t *page_dir, void *virtual_addr, voi
     for (size_t i = 0; i < count; i++)
     {
         page_mapping_table_t *page_mapping_table = find_create_page_mapping_table(page_dir, virtual_addr);
-        printk("0x%x, 0x%x, 0x%x\r\n", page_mapping_table, virtual_addr, physics_addr);
+        // printk("0x%x, 0x%x, 0x%x\r\n", page_mapping_table, virtual_addr, physics_addr);
         page_mapping_table->phy_page_addr = ((u32_t)physics_addr >> 12);
         assert(page_mapping_table->present == 0);
         page_mapping_table->present = 1;

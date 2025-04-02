@@ -3,11 +3,14 @@
 #include <task/task.h>
 #include <base/string.h>
 #include <drivers/device.h>
+#include <drivers/disk.h>
 #include <drivers/console_device.h>
 
 // 文件系统初始话
 void fs_init() {
     install_console_device();
+    // 磁盘系统的初始化后面还要改，先放这里
+    disk_init();
     file_init();
 }
 

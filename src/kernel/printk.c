@@ -91,3 +91,10 @@ void printk(const char *format, ...)
     assert(console_device != nullptr && console_device->write != NULL);
     console_device->write(buf, str_len);
 }
+
+int sprintf(char *buf, const char *format, ...) {
+    va_list args;
+    va_start(args, format);
+    int str_len = vsprintf(buf, format, args);
+    return str_len;
+}

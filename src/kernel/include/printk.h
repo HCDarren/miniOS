@@ -5,6 +5,8 @@
 
 void printk(const char* format, ...);
 
+int sprintf(char *buf, const char *format, ...);
+
 int vsprintf(char buf[], const char *format, va_list args);
 
 #endif

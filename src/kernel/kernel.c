@@ -15,10 +15,10 @@ int os_magic = OS_MAGIC;
 
 
 void kernel_init(){
+    interrupt_init();
     fs_init();
     memory_init();
     gdt_init();
-    interrupt_init();
     keyborad_init();
     syscall_init();
     task_init();
