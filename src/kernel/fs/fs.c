@@ -4,12 +4,11 @@
 #include <base/string.h>
 #include <drivers/device.h>
 #include <drivers/disk.h>
-#include <drivers/console_device.h>
 
 // 文件系统初始话
 void fs_init() {
-    install_console_device();
     // 磁盘系统的初始化后面还要改，先放这里
+    device_manager_init();
     disk_init();
     file_init();
 }
@@ -26,6 +25,16 @@ int fs_open(const char* file_name, const u32_t flags) {
         file->type = FILE_DEVICE;
         file->device_number = DEVICE_CONSOLE;
         return fd;
+    } else {
+        file_t* file = file_create();
+        int fd = task_add_file(file);
+        strcpy(file->name, file_name);
+        file->permission = flags;
+        file->position = 0;
+        file->reference_count = 1;
+        file->type = FILE_MORMAL;
+        file->device_number = DEVICE_DISK;
+        return fd;
     }
     return EOF;
 }
@@ -38,6 +47,9 @@ int fs_write(const u32_t fd, const char* buf, const u32_t len) {
         return len;
     } else {
         // 普通磁盘文件
+        device_t* device = device_find(file->device_number);
+        device->write(buf, len);
+        return len;
     }
     return EOF;
 }

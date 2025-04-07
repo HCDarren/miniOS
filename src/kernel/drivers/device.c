@@ -1,14 +1,78 @@
 #include <drivers/device.h>
 #include <base/assert.h>
+#include <drivers/console.h>
+#include <base/string.h>
 
 #define DEVICE_NUMBER 128
 // 只能安装 128 个设备
 static device_t* devices[DEVICE_NUMBER] = {0};
 
+/************* console_device start ************/
+static device_t console_device;
+static inline u32_t console_device_write(const void *buf, const u32_t count) {
+    console_write(buf, count);
+    return 0;
+}
+
+static inline void install_console_device() {
+    console_init();
+
+    device_t* device = &console_device;
+    
+    strcpy(device->device_name, "/dev/console");
+    device->device_type = DEVICE_CHAR;
+    device->device_number = DEVICE_CONSOLE;
+    device->write = console_device_write;
+    device->ioctl = NULL;
+    device->read = NULL;
+
+    device_install(device);
+}
+/************* console_device end **************/
+
+
+/************* disk device start ************/
+
+// 读设备方法指针
+static inline u32_t disk_read(const void *buf, const u32_t count) {
+    return 0;
+}
+
+// 写设备方法指针
+static inline u32_t disk_write(const void *buf, const u32_t count) {
+    return 0;
+}
+// 打开设备方法指针
+static inline u32_t disk_open(const char* path) {
+    return 0;
+}
+// seek 设备方法指针
+static inline u32_t disk_seek(const u32_t offset) {
+    return 0;
+}
+
+static device_t disk_device;
+static inline void install_disk_device() {
+    device_t* device = &disk_device;
+    
+    strcpy(device->device_name, "/home");
+    device->device_type = DEVICE_BLOCK;
+    device->device_number = DEVICE_DISK;
+    device->write = disk_write;
+    device->ioctl = NULL;
+    device->read = disk_read;
+    device->open = disk_open;
+    device->seek = disk_seek;
+
+    device_install(device);
+}
+/************* disk device end **************/
+
 // 设备管理初始化
 void device_manager_init() {
     // 可以把安装代码写到这里面
-
+    install_console_device();
+    install_disk_device();
 }
 
 // 设备安装

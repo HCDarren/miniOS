@@ -31,6 +31,8 @@
 #define DISK_COUNT 4
 static disk_t disk_tab[DISK_COUNT] = {0};
 
+static disk_t* fat16_disk;
+
 static inline void disk_set_sector(const disk_t* disk, const u32_t lba_start, const u32_t count) {
 
 }
@@ -39,10 +41,9 @@ static inline void disk_write_data(const disk_t* disk, void* buf, const u32_t si
 
 }
 
-static inline void disk_read_data(const disk_t* disk, void* buf, const u32_t size) {
-    u16_t * c = (u16_t *)buf;
+static inline void disk_read_data(const disk_t* disk, u16_t * buf, const u32_t size) {
     for (int i = 0; i < size / 2; i++) {
-        *c++ = inw(DISK_DATA(disk));
+        *buf++ = inw(DISK_DATA(disk));
     }
 }
 
@@ -68,7 +69,7 @@ static int disk_identify(disk_t* disk) {
     if (err == 0) {
         return -1;
     }
-    
+
     disk_wait_idle(disk, DISK_SR_NULL);
     // 512 个字节，扇区数量在 200 的地方
     u16_t buf[256];
@@ -85,7 +86,10 @@ void disk_init(void) {
         disk->io_port_base = (i / 2 == 0) ? DISK_IOBASE_PRIMARY : DISK_IOBASE_SECONDARY;
         disk->disk_type = (i % 2 == 0) ? DISK_MASTER : DISK_SLAVE;
         disk_identify(disk);
-
-        printk("%s: %dM\r\n", disk->name, disk->lba_size*512/1024/1024);
     }
+
+    // 这里还有分区，还有各种文件系统代码，我这里忽略了，感兴趣大家可以自己写下
+    // 我为了快速学习，这块我放弃了，时间精力有限，当时学习只有规划了一年的时间，我直接用 fat16 了，而且都写死
+    fat16_disk = &disk_tab[0];
+    printk("fat16_disk: name = %s, size = %dM\r\n", fat16_disk->name, fat16_disk->lba_size * 512/1024/1024);
 }

@@ -15,6 +15,8 @@ void real_init_thread()
     fd_t fd = fopen("/dev/console", 0);
     dup(fd);
     dup(fd);
+
+    fd = fopen("home/", 0);
     pid_t pid = fork();
     if (pid == 0)
     {

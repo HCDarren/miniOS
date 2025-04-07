@@ -20,6 +20,8 @@ typedef enum device_number
     DEVICE_CONSOLE = 1,
     // 键盘
     DEVICE_KEYBOARD,
+    // 磁盘
+    DEVICE_DISK,
 } device_number_t;
 
 // 抽象设备
@@ -31,11 +33,15 @@ typedef struct device
     // 设备号
     device_number_t device_number;
     // 设备控制方法指针
-    int (*ioctl)(const int cmd, const void *args, const int flags);
+    u32_t (*ioctl)(const u32_t cmd, const void *args, const u32_t flags);
     // 读设备方法指针
-    int (*read)(const void *buf, const u32_t count);
+    u32_t (*read)(const void *buf, const u32_t count);
     // 写设备方法指针
-    int (*write)(const void *buf, const u32_t count);
+    u32_t (*write)(const void *buf, const u32_t count);
+    // 打开设备方法指针
+    u32_t (*open)(const char* path);
+    // seek 设备方法指针
+    u32_t (*seek)(const u32_t offset);
 } device_t;
 
 // linux 一切皆文件的思想，所以统一接口抽象成设备文件，方法，安装，读，写，控制

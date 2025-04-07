@@ -36,7 +36,6 @@ ${BUILD}/kernel/kernel.bin: ${BUILD}/kernel/kernel.o \
 	${BUILD}/kernel/drivers/keyborad.o \
 	${BUILD}/kernel/drivers/device.o \
 	${BUILD}/kernel/drivers/disk.o \
-	${BUILD}/kernel/drivers/console_device.o \
 	${BUILD}/kernel/printk.o \
 	${BUILD}/kernel/interrupt.o \
 	${BUILD}/kernel/bridge.o \

@@ -26,10 +26,10 @@ typedef struct disk
     // sd0，sd1，sd2，sd3
     char name[DISK_NAME_LENGTH];
     disk_type_t disk_type;
-     // io 端口的开始位置
-     u16_t io_port_base;
+    // io 端口的开始位置
+    u16_t io_port_base;
     // lba 模式扇区的数量
-    int lba_size;
+    u32_t lba_size;
 } __packed disk_t;
 
 void disk_init(void);
