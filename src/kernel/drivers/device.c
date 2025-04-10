@@ -1,7 +1,9 @@
 #include <drivers/device.h>
 #include <base/assert.h>
 #include <drivers/console.h>
+#include <drivers/disk.h>
 #include <base/string.h>
+#include <fs/fat16.h>
 
 #define DEVICE_NUMBER 128
 // 只能安装 128 个设备
@@ -51,6 +53,18 @@ static inline u32_t disk_seek(const u32_t offset) {
     return 0;
 }
 
+static inline u32_t disk_closedir(DIR* dir) {
+    return fat16_closedir(dir);
+}
+
+static inline DIR* disk_opendir(const char * path) {
+    return fat16_opendir(path);
+}
+
+static inline dirent* disk_readdir(DIR* dir) {
+    return fat16_readdir(dir);
+}
+
 static device_t disk_device;
 static inline void install_disk_device() {
     device_t* device = &disk_device;
@@ -63,6 +77,9 @@ static inline void install_disk_device() {
     device->read = disk_read;
     device->open = disk_open;
     device->seek = disk_seek;
+    device->readdir = disk_readdir;
+    device->opendir = disk_opendir;
+    device->closedir = disk_closedir;
 
     device_install(device);
 }

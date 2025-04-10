@@ -60,6 +60,7 @@ ${BUILD}/kernel/kernel.bin: ${BUILD}/kernel/kernel.o \
 	${BUILD}/kernel/lib/stdio.o \
 	${BUILD}/kernel/fs/fs.o \
 	${BUILD}/kernel/fs/file.o \
+	${BUILD}/kernel/fs/fat16.o \
 
 	$(shell mkdir -p ${dir $@})
 	x86_64-elf-ld -m elf_i386 -static $^ -o $@ -Ttext $(ENTRYPOINT)
@@ -70,6 +71,9 @@ ${BUILD}/kernel/system.bin: ${BUILD}/kernel/kernel.bin
 
 ${BUILD}/kernel/system.map: ${BUILD}/kernel/kernel.bin
 	nm $< | sort > $@
+
+slave.img:
+	no | bximage -q -hd=32 -func=create -sectsize=512 -imgmode=flat $@
 
 master.img: ${BUILD}/bootloader/boot.bin ${BUILD}/bootloader/loader.bin \
 	${BUILD}/kernel/system.bin \
@@ -88,7 +92,10 @@ clean:
 bochs: master.img
 	bochs -q -debugger
 
+QEMU_DISK:= -drive file=master.img,if=ide,index=0,media=disk,format=raw
+QEMU_DISK+= -drive file=slave.img,if=ide,index=1,media=disk,format=raw
+
 .PHONY: qemu
-qemu: master.img
-	qemu-system-i386 -s -S -m 32M -boot c -hda $<
+qemu: master.img slave.img
+	qemu-system-i386 -s -S -m 32M ${QEMU_DISK} -boot c
 

@@ -61,6 +61,18 @@ static void do_sys_exit(exception_frame_t* exception_frame) {
     task_exit();
 }
 
+static void do_sys_opendir(exception_frame_t* exception_frame) {
+    
+}
+
+static void do_sys_readdir(exception_frame_t* exception_frame) {
+    
+}
+
+static void do_sys_closedir(exception_frame_t* exception_frame) {
+    
+}
+
 extern void interrupt_handler_syscall();
 
 // 系统调用处理函数
@@ -87,6 +99,9 @@ static inline void init_sys_table() {
     sys_call_table[sys_exit] = do_sys_exit;
     sys_call_table[sys_execve] = do_sys_execve;
     sys_call_table[sys_dup] = do_sys_dup;
+    sys_call_table[sys_opendir] = do_sys_opendir;
+    sys_call_table[sys_readdir] = do_sys_readdir;
+    sys_call_table[sys_closedir] = do_sys_closedir;
 }
 
 void syscall_init() { 

@@ -1,6 +1,7 @@
 #ifndef MINIOS_DEVICE_H
 #define MINIOS_DEVICE_H
 #include <os.h>
+#include <lib/dirent.h>
 
 #define DEVICE_NAME_LENGTH 32
 
@@ -42,6 +43,9 @@ typedef struct device
     u32_t (*open)(const char* path);
     // seek 设备方法指针
     u32_t (*seek)(const u32_t offset);
+    u32_t (*closedir)(DIR* dir);
+    DIR* (*opendir)(const char * path);
+    dirent* (*readdir)(DIR* dir);
 } device_t;
 
 // linux 一切皆文件的思想，所以统一接口抽象成设备文件，方法，安装，读，写，控制

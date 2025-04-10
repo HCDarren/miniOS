@@ -17,6 +17,9 @@ typedef enum syscall
     sys_exit,
     sys_execve,
     sys_dup,
+    sys_opendir,
+    sys_closedir,
+    sys_readdir,
 } syscall_t;
 
 void syscall_init();

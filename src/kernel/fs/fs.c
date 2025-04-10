@@ -53,3 +53,21 @@ int fs_write(const u32_t fd, const char* buf, const u32_t len) {
     }
     return EOF;
 }
+
+int fs_closedir(DIR* dir) {
+    device_t* disk_device = device_find(DEVICE_DISK);
+    assert(disk_device != NULL);
+    return disk_device->closedir(dir);
+}
+
+DIR* fs_opendir(const char * path) {
+    device_t* disk_device = device_find(DEVICE_DISK);
+    assert(disk_device != NULL);
+    return disk_device->opendir(path);
+}
+
+dirent* fs_readdir(DIR* dir) {
+    device_t* disk_device = device_find(DEVICE_DISK);
+    assert(disk_device != NULL);
+    return disk_device->readdir(dir);
+}
