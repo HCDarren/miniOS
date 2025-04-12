@@ -65,6 +65,15 @@ static void do_sys_opendir(exception_frame_t* exception_frame) {
     
 }
 
+static void do_sys_read(exception_frame_t* exception_frame) {
+    u32_t read_size = fs_read(exception_frame->ebx, (void*)exception_frame->ecx, exception_frame->edx);
+    exception_frame->eax = read_size;
+}
+
+static void do_sys_close(exception_frame_t* exception_frame) {
+    fs_close(exception_frame->ebx);
+}
+
 static void do_sys_readdir(exception_frame_t* exception_frame) {
     
 }
@@ -102,6 +111,8 @@ static inline void init_sys_table() {
     sys_call_table[sys_opendir] = do_sys_opendir;
     sys_call_table[sys_readdir] = do_sys_readdir;
     sys_call_table[sys_closedir] = do_sys_closedir;
+    sys_call_table[sys_read] = do_sys_read;
+    sys_call_table[sys_close] = do_sys_close;
 }
 
 void syscall_init() { 

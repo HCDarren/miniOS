@@ -16,21 +16,19 @@ void real_init_thread()
     dup(fd);
     dup(fd);
 
-    fd = fopen("home/", 0);
-    pid_t pid = fork();
-    if (pid == 0)
+    char buf[512];
+
+    for (size_t i = 0; i < 10; i++)
     {
-        printf("child process: %d\r\n", pid);
-        char* args[] = {"args1", "args2", "args3", nullptr};
-        execve("lib/shell.elf", args, nullptr);
+        fd = fopen("B.TXT", 0);
+        int count = fread(fd, buf, sizeof(buf));
+        printf("%s\r\n", buf);
+        fclose(fd);
     }
-    else
-    {
-        printf("parent process: %d\r\n", pid);
-    }
+    
     while (true)
     {
-        sleep(1000);
+       sleep(1000);
     }
 }
 

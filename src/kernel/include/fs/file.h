@@ -17,6 +17,8 @@ typedef struct file {
     char name[FILE_NAME_LENGTH];
     // 文件类型
     file_type_t type;
+    // 文件当前读到了哪个块
+    u32_t c_block; 
     // 文件大小
     u32_t size;
     // 引用的次数

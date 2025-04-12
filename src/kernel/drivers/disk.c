@@ -26,6 +26,11 @@
 #define DISK_STATUS_DF           (1 << 5)    // 驱动错误
 #define DISK_STATUS_BUSY         (1 << 7)    // 正忙
 
+#define	DISK_DRIVE_BASE		    0xE0
+
+#define	DISK_DISK_MASTER (0 << 4)     // 主设备
+#define	DISK_DISK_SLAVE (1 << 4)      // 从设备
+
 // IDE 控制器状态寄存器
 #define DISK_SR_OK 0x08
 
@@ -55,19 +60,21 @@ static disk_t* fat16_disk;
 - 第7位，LBA模式为 1，CHS模式为 0
 - 第8位固定值为 1
 */
-static inline void disk_select_sector_send_cmd(const disk_t* disk, const u32_t lba_start, const u32_t count, const u32_t cmd) {
-    // 不知道为啥要先写一个 0 奇怪了
-    outb(DISK_LBA_LOW(disk), 0);	
-    // 扇区数量8位
-	outb(DISK_SECTOR(disk), (u8_t) (count));
-    // LBA参数的0-7		
-	outb(DISK_LBA_LOW(disk), (u8_t) (lba_start >> 0));
-    // LBA参数的8-15位			
-	outb(DISK_LBA_MID(disk), (u8_t) (lba_start >> 8));
-    // LBA参数的16-23位		
-	outb(DISK_LBA_HIGH(disk), (u8_t) (lba_start >> 16));	
-    // 最高4位加磁盘选择
-    outb(DISK_HDDEVSEL(disk), ((lba_start >> 24) & 0xf) | (disk->disk_type == DISK_MASTER ? DISK_LBA_MASTER : DISK_LBA_SLAVE));
+static inline void disk_select_sector_send_cmd(const disk_t* disk, const u32_t lba_start, const u32_t sector_count, const u32_t cmd) {
+    // 设置 LBA48 参数（分两次写入高/低 24 位）
+    // --- 低 24 位 ---
+    outb(DISK_SECTOR(disk), (sector_count >> 8) & 0xFF); // 扇区数高字节（LBA48）
+    outb(DISK_LBA_LOW(disk), (lba_start >> 24) & 0xFF); // LBA 24-31
+    outb(DISK_LBA_MID(disk), 0); // LBA 32-39
+    outb(DISK_LBA_HIGH(disk), 0); // LBA 40-47
+    // --- 高 24 位 ---
+    outb(DISK_SECTOR(disk), sector_count & 0xFF); // 扇区数低字节
+    outb(DISK_LBA_LOW(disk), lba_start & 0xFF); // LBA 0-7
+    outb(DISK_LBA_MID(disk), (lba_start >> 8) & 0xFF); // LBA 8-15
+    outb(DISK_LBA_HIGH(disk), (lba_start >> 16) & 0xFF); // LBA 16-23
+
+    // 设置驱动器为 LBA 模式 + 主盘
+    outb(DISK_HDDEVSEL(disk), (disk->disk_type == DISK_MASTER ? DISK_DISK_MASTER : DISK_DISK_SLAVE) | DISK_DRIVE_BASE); // 0x40 表示 LBA 模式
     // 命令端口
     outb(DISK_COMMAND(disk), cmd);
 }

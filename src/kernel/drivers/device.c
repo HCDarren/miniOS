@@ -4,6 +4,7 @@
 #include <drivers/disk.h>
 #include <base/string.h>
 #include <fs/fat16.h>
+#include <fs/file.h>
 
 #define DEVICE_NUMBER 128
 // 只能安装 128 个设备
@@ -36,8 +37,8 @@ static inline void install_console_device() {
 /************* disk device start ************/
 
 // 读设备方法指针
-static inline u32_t disk_read(const void *buf, const u32_t count) {
-    return 0;
+static inline u32_t disk_read(void * file, const void *buf, const u32_t count) {
+    return fat16_read((file_t*)file, buf, count);
 }
 
 // 写设备方法指针
@@ -45,8 +46,8 @@ static inline u32_t disk_write(const void *buf, const u32_t count) {
     return 0;
 }
 // 打开设备方法指针
-static inline u32_t disk_open(const char* path) {
-    return 0;
+static inline u32_t disk_open(const char* path, const void* file) {
+    return fat16_open(path, (file_t*)file);
 }
 // seek 设备方法指针
 static inline u32_t disk_seek(const u32_t offset) {

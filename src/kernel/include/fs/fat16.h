@@ -4,6 +4,7 @@
 #include <os.h>
 #include <drivers/disk.h>
 #include <lib/dirent.h>
+#include <fs/file.h>
 
 /**
  * 目录项
@@ -56,7 +57,11 @@ typedef struct {
     // 根目录文件的数量
     u32_t root_file_count; 
     // 根目录在磁盘中的开始位置
-    u32_t root_start_lba;                 
+    u32_t root_start_lba;  
+    // 数据存放的起始位置
+    u32_t data_start_lba; 
+    // 块大小
+    u32_t block_size;                
 } __packed fat16_t;
 
 void fat16_init(disk_t* disk);
@@ -66,5 +71,9 @@ u32_t fat16_closedir(DIR* dir);
 DIR* fat16_opendir(const char * path);
 
 dirent* fat16_readdir(DIR* dir);
+
+u32_t fat16_open(const char* path, file_t* file);
+
+u32_t fat16_read(file_t* file, void* buf, u32_t size);
 
 #endif

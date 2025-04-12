@@ -5,6 +5,7 @@
 #define NULL 0
 #define nullptr 0
 #define EOF -1
+#define OK 0
 #define ERR -1
 // 用于定义特殊的结构体
 #define __packed __attribute__((packed))

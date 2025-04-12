@@ -8,3 +8,11 @@ fd_t fopen(const char* file_name, int flags) {
 fd_t dup(fd_t fd) {
     return syscall_1(sys_dup, fd);
 }
+
+u32_t fread(fd_t fd, void* buf, u32_t size) {
+    return syscall_3(sys_read, fd, (u32_t)buf, size);
+}
+
+u32_t fclose(fd_t fd) {
+    return syscall_1(sys_close, fd);
+}

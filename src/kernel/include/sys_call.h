@@ -10,6 +10,8 @@ typedef enum syscall
 {
     sys_open = 1,
     sys_write,
+    sys_read,
+    sys_close,
     sys_fork,
     sys_getpid,
     sys_getppid,
