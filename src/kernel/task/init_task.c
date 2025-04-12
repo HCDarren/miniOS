@@ -16,14 +16,10 @@ void real_init_thread()
     dup(fd);
     dup(fd);
 
-    char buf[512];
-
-    for (size_t i = 0; i < 10; i++)
-    {
-        fd = fopen("B.TXT", 0);
-        int count = fread(fd, buf, sizeof(buf));
-        printf("%s\r\n", buf);
-        fclose(fd);
+    pid_t pid = fork();
+    if (pid == 0) {
+        // 子进程，执行 elf 文件
+        execve("MAIN.ELF", NULL, NULL);
     }
     
     while (true)
@@ -34,23 +30,5 @@ void real_init_thread()
 
 void init_thread()
 {
-    user_intrrupt_frame_t user_intrrupt_frame;
-    // 设置各个段寄存器的变量
-    user_intrrupt_frame.eax = 0;
-    user_intrrupt_frame.ss = USER_DATA_SELECTOR;
-    user_intrrupt_frame.cs = USER_CODE_SELECTOR;
-    user_intrrupt_frame.ds = USER_DATA_SELECTOR;
-    user_intrrupt_frame.es = USER_CODE_SELECTOR;
-    user_intrrupt_frame.fs = USER_CODE_SELECTOR;
-    user_intrrupt_frame.gs = USER_CODE_SELECTOR;
-    // 用户栈的 esp 位置
-    user_intrrupt_frame.esp = USER_STACK_TOP;
-    user_intrrupt_frame.eip = (u32_t)real_init_thread;
-    user_intrrupt_frame.eflags = (0 << 12 | 0b10 | 1 << 9);
-    
-    void* esp = &user_intrrupt_frame;
-    // 把 user_intr_frame 赋值给 esp
-    asm volatile(
-        "movl %0, %%esp\n\t"
-        "jmp switch_to_user_mode\n\t" ::"m"(esp));
+    pre_jmp_to_user_mode(real_init_thread);
 }

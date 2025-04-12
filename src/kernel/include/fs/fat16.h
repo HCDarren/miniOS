@@ -61,7 +61,10 @@ typedef struct {
     // 数据存放的起始位置
     u32_t data_start_lba; 
     // 块大小
-    u32_t block_size;                
+    u32_t block_size; 
+    // buf 放在这里面
+    u16_t data_buf[256];
+    u32_t buf_size;
 } __packed fat16_t;
 
 void fat16_init(disk_t* disk);

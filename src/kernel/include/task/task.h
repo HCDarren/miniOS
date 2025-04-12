@@ -162,4 +162,8 @@ file_t* task_get_file(fd_t fd);
 // 根据文件描述符移除一个文件
 void task_remove_file(fd_t fd);
 
+int task_execve(const char* file_name);
+
+void pre_jmp_to_user_mode(void* eip);
+
 #endif

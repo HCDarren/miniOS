@@ -2,6 +2,7 @@
 #include <drivers/disk.h>
 #include <printk.h>
 #include <base/string.h>
+#include <base/assert.h>
 #include <memory/memory_manager.h>
 
 static disk_t* fat16_disk;
@@ -49,10 +50,10 @@ static inline void fat16_test_code() {
 
 void fat16_init(disk_t* disk) {
     fat16_disk = disk;
+    fat16.buf_size = 512;
     // 读取基础数据在第一个扇区
-    u16_t buf[512] = {0};
-    disk_io_read(fat16_disk, 0, 1, buf, sizeof(buf));
-    dbr_t* dbr = (dbr_t*)buf;
+    disk_io_read(fat16_disk, 0, 1, fat16.data_buf, fat16.buf_size);
+    dbr_t* dbr = (dbr_t*)fat16.data_buf;
     // 设置 fat16 的基础数据
     fat16.fat_start_lba = dbr->BPB_RsvdSecCnt;
     fat16.fat_count = dbr->BPB_NumFATs;
@@ -63,18 +64,50 @@ void fat16_init(disk_t* disk) {
     fat16.root_start_lba = fat16.fat_start_lba + (fat16.fat_count * fat16.fat_sectors);
     fat16.data_start_lba = fat16.root_start_lba + fat16.root_file_count * 32 / dbr->BPB_BytsPerSec;
     fat16.block_size = fat16.sectors_per_bolck * fat16.bytes_per_sector;
+   
+}
+
+// 根据当前文件的 block 获取下一块的位置
+static inline u16_t get_next_block(u32_t c_block) {
+    // fat 都是 16 字节的
+    u32_t offset = c_block * sizeof(u16_t);
+    int sector = offset / fat16.bytes_per_sector;
+    int offset_sector = offset % fat16.bytes_per_sector;
+    disk_io_read(fat16_disk, fat16.fat_start_lba + sector, 1, fat16.data_buf, fat16.buf_size);
+    return *(u16_t*)((void*)fat16.data_buf + offset_sector);
 }
 
 u32_t fat16_read(file_t* file, void* buf, u32_t size) {
-    u32_t sector = fat16.data_start_lba + (file->c_block - 2) * fat16.sectors_per_bolck;
-    // 一次应该读一个块大小，不知道为啥，我这里不能这么搞
-    u16_t data_buf[256];
-    disk_io_read(fat16_disk, sector, 1, data_buf, sizeof(data_buf));
-    for (size_t i = 0; i < size / 2; i++)
+    u32_t read_size = 0;
+    u32_t copy_size = fat16.buf_size;
+    while (read_size < size) // 不断的读
     {
-        memcpy(buf, data_buf, size);
+        u32_t sector = fat16.data_start_lba + (file->c_block - 2) * fat16.sectors_per_bolck;
+        // 每次都读一个块
+        for (u32_t i = 0; i < fat16.sectors_per_bolck; i++)
+        {
+            if (file->position + fat16.buf_size > file->size) { 
+                // 文件将要读完
+                copy_size = file->size - file->position;
+            }
+            if (read_size + fat16.buf_size > size) { 
+                // 本次将要读完
+                copy_size = size - read_size;
+            }
+            disk_io_read(fat16_disk, sector, 1, fat16.data_buf, fat16.buf_size);
+            // 一次应该读一个块大小，不知道为啥，我这里不能这么搞
+            memcpy(buf + read_size, fat16.data_buf, copy_size);
+            read_size += copy_size;
+            file->position += copy_size;
+            if (file->position == file->size) {
+                return read_size;
+            }
+        }
+        // 读完一块，更新到下一块
+        file->c_block = get_next_block(file->c_block);
+        assert(file->c_block != EOF && file->c_block != 0);
     }
-    return file->size;
+    return read_size;
 }
 
 u32_t fat16_open(const char* path, file_t* file) {

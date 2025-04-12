@@ -39,7 +39,10 @@ static void do_sys_fork(exception_frame_t* exception_frame){
 
 // 待完善
 static void do_sys_execve(exception_frame_t* exception_frame) {
-    
+    char* elf_name = (char*)exception_frame->ebx;
+    // 跳到程序入口执行
+    int res = task_execve(elf_name);
+    exception_frame->eax = res;
 }
 
 // 获取进程id

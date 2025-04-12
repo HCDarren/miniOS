@@ -11,6 +11,8 @@
 #include <memory/memory_manager.h>
 #include <base/asm_instruct.h>
 #include <ipc/mutex.h>
+#include <elf/elf.h>
+#include <fs/fs.h>
 
 static task_manager_t task_manager;
 
@@ -259,4 +261,52 @@ void task_remove_file(u32_t fd) {
     assert(fd >=0 && fd < FILE_DESCRIPTOR_TABLE_COUNT);
     assert(current_running_task()->file_descriptor_table[fd] != NULL);
     current_running_task()->file_descriptor_table[fd] = NULL;
+}
+
+void pre_jmp_to_user_mode(void* eip) {
+    user_intrrupt_frame_t user_intrrupt_frame;
+    user_intrrupt_frame.eax = 0;
+    user_intrrupt_frame.ss = USER_DATA_SELECTOR;
+    user_intrrupt_frame.cs = USER_CODE_SELECTOR;
+    user_intrrupt_frame.ds = USER_DATA_SELECTOR;
+    user_intrrupt_frame.es = USER_CODE_SELECTOR;
+    user_intrrupt_frame.fs = USER_CODE_SELECTOR;
+    user_intrrupt_frame.gs = USER_CODE_SELECTOR;
+    // 用户栈的 esp 位置
+    user_intrrupt_frame.esp = USER_STACK_TOP;
+    user_intrrupt_frame.eip = (u32_t)eip;
+    user_intrrupt_frame.eflags = (0 << 12 | 0b10 | 1 << 9);
+    
+    void* esp = &user_intrrupt_frame;
+    // 把 user_intr_frame 赋值给 esp
+    asm volatile(
+        "movl %0, %%esp\n\t"
+        "jmp switch_to_user_mode\n\t" ::"m"(esp));
+}
+
+int task_execve(const char* file_name) {
+    fd_t fd = fs_open(file_name, 0);
+    file_t* file = task_get_file(fd);
+    u32_t file_size = file->size;
+    // 全部读到内存里，实际过程中不可能全部读到内存里，这里简单写了。因为我们并没有写 fseek
+    u32_t alloc_page_cnt = (file_size / PAGE_SIZE) + 1;
+    void* elf_data = alloc_pages(alloc_page_cnt);
+    // 全部读出来
+    fs_read(fd, elf_data, file_size);
+    // 加载 elf 文件头
+    Elf32_Ehdr* elf32_ehdr = (Elf32_Ehdr*)elf_data;
+    // 可以加一些异常的判断，模式这些，忽略...
+
+    // 加载程序头
+    Elf32_Phdr* elf32_phdr = (Elf32_Phdr*)((u8_t*)elf32_ehdr + elf32_ehdr->e_phoff);
+    for (u32_t i = 0; i < elf32_ehdr->e_phnum; i++, elf32_phdr++)
+    {
+        load_elf32_phdr(elf_data, elf32_phdr);
+    }
+    // 释放内核内存
+    free_pages(elf_data, alloc_page_cnt);
+    void* eip = (void*)elf32_ehdr->e_entry;
+    // 重新回到用户态去执行
+    pre_jmp_to_user_mode(eip);
+    return 0;
 }

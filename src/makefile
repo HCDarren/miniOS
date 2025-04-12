@@ -61,6 +61,7 @@ ${BUILD}/kernel/kernel.bin: ${BUILD}/kernel/kernel.o \
 	${BUILD}/kernel/fs/fs.o \
 	${BUILD}/kernel/fs/file.o \
 	${BUILD}/kernel/fs/fat16.o \
+	${BUILD}/kernel/elf/elf.o \
 
 	$(shell mkdir -p ${dir $@})
 	x86_64-elf-ld -m elf_i386 -static $^ -o $@ -Ttext $(ENTRYPOINT)
