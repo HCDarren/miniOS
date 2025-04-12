@@ -56,6 +56,8 @@ static disk_t* fat16_disk;
 - 第8位固定值为 1
 */
 static inline void disk_select_sector_send_cmd(const disk_t* disk, const u32_t lba_start, const u32_t count, const u32_t cmd) {
+    // 不知道为啥要先写一个 0 奇怪了
+    outb(DISK_LBA_LOW(disk), 0);	
     // 扇区数量8位
 	outb(DISK_SECTOR(disk), (u8_t) (count));
     // LBA参数的0-7		
@@ -140,21 +142,14 @@ void disk_init(void) {
     // mac 电脑不太好弄分区，我直接用 
     // brew install dosfstools
     // mkfs.fat -F 16 slave.img
+    // hdiutil attach slave.img -mountpoint /Volumes/mydisk
     // 搞了一整块的 slave.img 用的 fat16，本来打算用 ext 格式的
     fat16_init(&disk_tab[1]);
 }
 
 void disk_io_read(const disk_t* disk, u32_t lba_start, u32_t count, u16_t * buf, u32_t size) {
-    int retry_count = 0;
-    while (true)
-    {
-        disk_select_sector_send_cmd(disk, lba_start, count, DISK_CMD_READ);
-        u32_t err = disk_wait_idle(disk);
-        disk_read_data(disk, buf, size);
-        if (err == 0) {
-            return;
-        }
-        // 可重试 10 次
-        assert(retry_count++ < 10);
-    }
+    disk_select_sector_send_cmd(disk, lba_start, count, DISK_CMD_READ);
+    u32_t err = disk_wait_idle(disk);
+    disk_read_data(disk, buf, size);
+    assert(err == 0);
 }
