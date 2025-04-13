@@ -2,12 +2,12 @@
 #include <task/task.h>
 #include <gdt.h>
 #include <memory/memory_manager.h>
-#include <lib/printf.h>
-#include <lib/unistd.h>
-#include <lib/stdio.h>
-#include <lib/sleep.h>
-#include <lib/exit.h>
-#include <lib/execve.h>
+#include <lib/include/printf.h>
+#include <lib/include/unistd.h>
+#include <lib/include/stdio.h>
+#include <lib/include/sleep.h>
+#include <lib/include/exit.h>
+#include <lib/include/execve.h>
 #include <base/asm_instruct.h>
 
 void real_init_thread()
@@ -18,13 +18,14 @@ void real_init_thread()
 
     pid_t pid = fork();
     if (pid == 0) {
-        // 子进程，执行 elf 文件
-        execve("MAIN.ELF", NULL, NULL);
-    }
-    
-    while (true)
-    {
-       sleep(1000);
+        // 执行 shell 进程
+        execve("SHELL.ELF", NULL, NULL);
+    } else {
+        // init 进程简单写了，一直睡眠
+        while (true)
+        {
+           sleep(10000);
+        }
     }
 }
 

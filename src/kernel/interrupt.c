@@ -40,7 +40,7 @@ void do_interrupt_handler_page_fault(exception_frame_t* exception_frame) {
     void* new_physics_addr = alloc_a_page();
     // 页往下对其
     void* virtual_addr = (void*)DOWN_ON(page_fault_addr, PAGE_SIZE);
-    printk("do_interrupt_handler_page_fault: page_fault_addr = 0x%x, page_dir = 0x%x, new_physics_addr = 0x%x, virtual_addr = 0x%x\r\n", page_fault_addr, page_dir, new_physics_addr, virtual_addr);
+    // printk("do_interrupt_handler_page_fault: page_fault_addr = 0x%x, page_dir = 0x%x, new_physics_addr = 0x%x, virtual_addr = 0x%x\r\n", page_fault_addr, page_dir, new_physics_addr, virtual_addr);
     create_memory_mapping(page_dir, (void*)virtual_addr, new_physics_addr, 1);
     // 刷新快表，好像不刷新也没有关系，应该是虚拟机的问题
     flush_tlb(page_fault_addr);

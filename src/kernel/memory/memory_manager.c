@@ -137,7 +137,6 @@ void memory_init()
             if (memory_info_ptr->size > max_memory_size) {
                 max_memory_start = (void*)memory_info_ptr->base;
                 max_memory_size = memory_info_ptr->size;
-                printk("max_memory_start: 0x%x, max_memory_size: %d\r\n", max_memory_start, max_memory_size);
             }
         }
     }

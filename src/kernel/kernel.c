@@ -6,7 +6,7 @@
 #include <time.h>
 #include <task/task.h>
 #include <gdt.h>
-#include <sys_call.h>
+#include <kernel_call.h>
 #include <base/assert.h>
 #include <base/asm_instruct.h>
 #include <memory/memory_manager.h>

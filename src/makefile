@@ -17,18 +17,38 @@ CFLAGS:=$(strip ${CFLAGS})
 
 DEBUG:= -g
 INCLUDE:= -I${SRC}/kernel/include
+INCLUDE+= -I${SRC}/application
+INCLUDE+= -I${SRC}
 
 ${BUILD}/bootloader/%.bin: ${SRC}/bootloader/%.asm
 	$(shell mkdir -p ${dir $@})
 	nasm -f bin $< -o $@ -l ${BUILD}/bootloader/$*.lst
 
-${BUILD}/kernel/%.o: ${SRC}/kernel/%.asm
+${BUILD}/%.o: ${SRC}/%.asm
 	$(shell mkdir -p ${dir $@})
-	nasm -f elf32 ${DEBUG} $< -o $@ -l ${BUILD}/kernel/$*.lst
+	nasm -f elf32 ${DEBUG} $< -o $@ -l ${BUILD}/$*.lst
 
-${BUILD}/kernel/%.o: ${SRC}/kernel/%.c
+${BUILD}/%.o: ${SRC}/%.c
 	$(shell mkdir -p ${dir $@})
 	x86_64-elf-gcc ${CFLAGS} ${DEBUG} ${INCLUDE} -c $< -o $@
+
+# 编译 libc 库
+$(BUILD)/lib/libc.o: $(BUILD)/lib/dirent.o \
+	$(BUILD)/lib/execve.o \
+	$(BUILD)/lib/exit.o \
+	$(BUILD)/lib/printf.o \
+	$(BUILD)/lib/sleep.o \
+	$(BUILD)/lib/stdio.o \
+	$(BUILD)/lib/syscall.o \
+	$(BUILD)/lib/unistd.o \
+
+	x86_64-elf-ld -m elf_i386 -r $^ -o $@
+
+$(BUILD)/%.elf: $(BUILD)/%/main.o \
+	$(BUILD)/application/start.o \
+	$(BUILD)/lib/libc.o \
+
+	x86_64-elf-ld -m elf_i386 -static $^ -o $@ -Ttext 0x40000000
 
 ${BUILD}/kernel/kernel.bin: ${BUILD}/kernel/kernel.o \
 	${BUILD}/kernel/drivers/io.o \
@@ -51,13 +71,14 @@ ${BUILD}/kernel/kernel.bin: ${BUILD}/kernel/kernel.o \
 	${BUILD}/kernel/memory/bitmap.o \
 	${BUILD}/kernel/base/asm_instruct.o \
 	${BUILD}/kernel/ipc/mutex.o \
-	${BUILD}/kernel/sys_call.o \
-	${BUILD}/kernel/lib/printf.o \
-	${BUILD}/kernel/lib/unistd.o \
-	${BUILD}/kernel/lib/sleep.o \
-	${BUILD}/kernel/lib/exit.o \
-	${BUILD}/kernel/lib/execve.o \
-	${BUILD}/kernel/lib/stdio.o \
+	${BUILD}/kernel/kernel_call.o \
+	${BUILD}/lib/printf.o \
+	${BUILD}/lib/unistd.o \
+	${BUILD}/lib/sleep.o \
+	${BUILD}/lib/exit.o \
+	${BUILD}/lib/execve.o \
+	${BUILD}/lib/stdio.o \
+	${BUILD}/lib/syscall.o \
 	${BUILD}/kernel/fs/fs.o \
 	${BUILD}/kernel/fs/file.o \
 	${BUILD}/kernel/fs/fat16.o \
@@ -75,6 +96,18 @@ ${BUILD}/kernel/system.map: ${BUILD}/kernel/kernel.bin
 
 slave.img:
 	no | bximage -q -hd=32 -func=create -sectsize=512 -imgmode=flat $@
+
+application.app: $(BUILD)/application/shell.elf\
+	$(BUILD)/application/cat.elf\
+
+	# 挂载 slave 从盘设备
+	hdiutil attach slave.img -mountpoint /Volumes/mydisk
+	# 拷贝 elf 文件到根目录
+	cp -r $(BUILD)/application/shell.elf /Volumes/mydisk
+	cp -r $(BUILD)/application/cat.elf /Volumes/mydisk
+	# 卸载设备
+	hdiutil detach /Volumes/mydisk
+
 
 master.img: ${BUILD}/bootloader/boot.bin ${BUILD}/bootloader/loader.bin \
 	${BUILD}/kernel/system.bin \
@@ -97,6 +130,5 @@ QEMU_DISK:= -drive file=master.img,if=ide,index=0,media=disk,format=raw
 QEMU_DISK+= -drive file=slave.img,if=ide,index=1,media=disk,format=raw
 
 .PHONY: qemu
-qemu: master.img slave.img
+qemu: slave.img application.app master.img 
 	qemu-system-i386 -s -S -m 32M ${QEMU_DISK} -boot c
-

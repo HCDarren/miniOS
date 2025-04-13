@@ -3,7 +3,7 @@
 
 #include <os.h>
 #include <drivers/disk.h>
-#include <lib/dirent.h>
+#include <lib/include/dirent.h>
 #include <fs/file.h>
 
 /**

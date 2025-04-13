@@ -2,7 +2,7 @@
 #define MINIOS_FS_H
 
 #include <os.h>
-#include <lib/dirent.h>
+#include <lib/include/dirent.h>
 
 void fs_init();
 

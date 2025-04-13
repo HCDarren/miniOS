@@ -82,7 +82,7 @@ u32_t fat16_read(file_t* file, void* buf, u32_t size) {
     u32_t copy_size = fat16.buf_size;
     while (read_size < size) // 不断的读
     {
-        u32_t sector = fat16.data_start_lba + (file->c_block - 2) * fat16.sectors_per_bolck;
+        u32_t block_sector = fat16.data_start_lba + (file->c_block - 2) * fat16.sectors_per_bolck;
         // 每次都读一个块
         for (u32_t i = 0; i < fat16.sectors_per_bolck; i++)
         {
@@ -94,7 +94,7 @@ u32_t fat16_read(file_t* file, void* buf, u32_t size) {
                 // 本次将要读完
                 copy_size = size - read_size;
             }
-            disk_io_read(fat16_disk, sector, 1, fat16.data_buf, fat16.buf_size);
+            disk_io_read(fat16_disk, block_sector + i, 1, fat16.data_buf, fat16.buf_size);
             // 一次应该读一个块大小，不知道为啥，我这里不能这么搞
             memcpy(buf + read_size, fat16.data_buf, copy_size);
             read_size += copy_size;

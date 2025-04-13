@@ -1,7 +1,7 @@
 #ifndef MINIOS_DEVICE_H
 #define MINIOS_DEVICE_H
 #include <os.h>
-#include <lib/dirent.h>
+#include <lib/include/dirent.h>
 
 #define DEVICE_NAME_LENGTH 32
 
