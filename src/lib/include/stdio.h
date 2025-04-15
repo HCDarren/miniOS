@@ -9,6 +9,8 @@ fd_t dup(fd_t fd);
 
 u32_t fread(fd_t fd, void* buf, u32_t size);
 
+u32_t fgets(fd_t fd, void* buf, u32_t size);
+
 u32_t fclose(fd_t fd);
 
 #endif

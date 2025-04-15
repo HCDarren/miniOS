@@ -1,8 +1,12 @@
 #include <shell/include/main.h>
 #include <lib/include/printf.h>
 #include <lib/include/sleep.h>
+#include <lib/include/stdio.h>
 
-#define SHELL_PROMPT "darrenzeng@DARRENZENG-MB4 ~ %"
+#define SHELL_PROMPT "\r\ndarrenzeng@DARRENZENG-MB4 ~ %"
+
+// 从tty设备读取
+char shell_data_buf[1024];
 
 int main(int argc, char** argv) {
     // 输出一些基本信息
@@ -13,7 +17,8 @@ int main(int argc, char** argv) {
     for (;;)
     {
        printf(SHELL_PROMPT);
-       sleep(50000);
+       fgets(stdin, shell_data_buf, sizeof(shell_data_buf));
+       // 执行命令
     }
     return 0;
 }

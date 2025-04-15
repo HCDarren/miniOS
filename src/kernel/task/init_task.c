@@ -12,7 +12,7 @@
 
 void real_init_thread()
 {
-    fd_t fd = fopen("/dev/console", 0);
+    fd_t fd = fopen("/dev/tty", 0);
     dup(fd);
     dup(fd);
 

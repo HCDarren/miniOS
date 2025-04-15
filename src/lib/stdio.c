@@ -13,6 +13,10 @@ u32_t fread(fd_t fd, void* buf, u32_t size) {
     return syscall_3(sys_read, fd, (u32_t)buf, size);
 }
 
+u32_t fgets(fd_t fd, void* buf, u32_t size) {
+    return syscall_3(sys_read, fd, (u32_t)buf, size);
+}
+
 u32_t fclose(fd_t fd) {
     return syscall_1(sys_close, fd);
 }

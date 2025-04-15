@@ -105,7 +105,7 @@ void console_clear() {
     // 这里我们简单一点，全部清掉。
     // 1、屏幕缓冲区都填充空格
     u16_t* vga_mem_start = (u16_t*)CRT_MEM_BASE;
-    for (int i = 0; i < CRT_MEM_SIZE; i++) {
+    for (u32_t i = 0; i < CRT_MEM_SIZE; i++) {
         vga_mem_start[i] = ERASE;
     }
     // 2、重新设置屏幕翻屏显示位置
@@ -118,6 +118,17 @@ void console_clear() {
 void console_init() {
     vga_position = (char*)CRT_MEM_BASE;
     console_clear();
+}
+
+// 删除字符
+static inline void console_erase(u32_t erase_count) {
+    cursor_position -= erase_count;
+    u16_t* cur_vga_position = (u16_t*)vga_position;
+    vga_position -= erase_count * 2;
+
+    for (u16_t* start = (u16_t*)vga_position; start < cur_vga_position; start++) {
+        *start = ERASE;
+    }
 }
 
 void console_write(const char *buf, u32_t count) {
@@ -135,6 +146,9 @@ void console_write(const char *buf, u32_t count) {
             int delete = (cursor_position % CRT_WIDTH);
             cursor_position -= delete;
             vga_position -= delete * 2;
+            break;
+        case '\b': // 删除
+            console_erase(1);
             break;
         default:
             // 滚屏问题

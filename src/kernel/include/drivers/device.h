@@ -23,6 +23,8 @@ typedef enum device_number
     DEVICE_KEYBOARD,
     // 磁盘
     DEVICE_DISK,
+    // tty
+    DEVICE_TTY,
 } device_number_t;
 
 // 抽象设备

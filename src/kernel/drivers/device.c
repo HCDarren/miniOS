@@ -2,6 +2,7 @@
 #include <base/assert.h>
 #include <drivers/console.h>
 #include <drivers/disk.h>
+#include <drivers/tty.h>
 #include <base/string.h>
 #include <fs/fat16.h>
 #include <fs/file.h>
@@ -84,6 +85,7 @@ static inline void install_disk_device() {
 
     device_install(device);
 }
+
 /************* disk device end **************/
 
 // 设备管理初始化
@@ -91,6 +93,7 @@ void device_manager_init() {
     // 可以把安装代码写到这里面
     install_console_device();
     install_disk_device();
+    tty_init();
 }
 
 // 设备安装

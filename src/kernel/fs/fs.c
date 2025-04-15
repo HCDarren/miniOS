@@ -10,7 +10,7 @@ void fs_init() {
     // 磁盘系统的初始化后面还要改，先放这里
     device_manager_init();
     disk_init();
-    file_init();
+    file_init(); 
 }
 
 // 文件系统打开文件
@@ -22,9 +22,9 @@ int fs_open(const char* file_name, const u32_t flags) {
     file->reference_count = 1;
     file->position = 0;
     // 控制台设备
-    if (strcmp(file_name, "/dev/console") == 0) {
+    if (strcmp(file_name, "/dev/tty") == 0) {
         file->type = FILE_DEVICE;
-        file->device_number = DEVICE_CONSOLE;
+        file->device_number = DEVICE_TTY;
         return fd;
     }
     // 普通文件设备
