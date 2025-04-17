@@ -18,6 +18,7 @@ int main(int argc, char** argv) {
     {
        printf(SHELL_PROMPT);
        fgets(stdin, shell_data_buf, sizeof(shell_data_buf));
+       sleep(50000);
        // 执行命令
     }
     return 0;

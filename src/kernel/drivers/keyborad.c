@@ -2,7 +2,7 @@
 #include <drivers/io.h>
 #include <interrupt.h>
 #include <printk.h>
-
+#include <drivers/tty.h>
 // 键盘数据端口
 #define KEYBOARD_DATA_PORT 0x60
 // 键盘控制端口
@@ -94,8 +94,7 @@ void do_interrupt_handler_keyborad(exception_frame_t *exception_frame)
     }
     
     char keycode = is_shift_down ? keymap[scancode].shift_keycode : keymap[scancode].keycode;
-
-    printk("%c", keycode);
+    tty_put(keycode);
 }
 
 // 键盘驱动初始化
