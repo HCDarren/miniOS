@@ -72,6 +72,7 @@ ${BUILD}/kernel/kernel.bin: ${BUILD}/kernel/kernel.o \
 	${BUILD}/kernel/memory/bitmap.o \
 	${BUILD}/kernel/base/asm_instruct.o \
 	${BUILD}/kernel/ipc/mutex.o \
+	${BUILD}/kernel/ipc/semaphore.o \
 	${BUILD}/kernel/kernel_call.o \
 	${BUILD}/lib/printf.o \
 	${BUILD}/lib/unistd.o \

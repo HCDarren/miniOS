@@ -129,6 +129,7 @@ void task_sleep(u32_t sleep_time) {
     list_add_tail(&task_manager.wait_list, &running_task->wait_list_node);
     mutex_unlock(&mutex);
     set_task_block(running_task);
+    task_yield();
 }
 
 // 进程唤醒
@@ -158,8 +159,8 @@ task_t* current_running_task() {
 void set_task_block(task_t* task) {
     task->state == TASK_BLOCKED;
     bool is_removed = list_remove(&task_manager.ready_list, &task->list_node);
+    assert(is_removed);
     task->ticks = 1;
-    task_yield();
 }
 
 // 设置当前进程为 ready

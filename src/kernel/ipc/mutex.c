@@ -39,6 +39,7 @@ void mutex_lock(mutex_t* mutex) {
         
         list_add_tail(&mutex->wait_list, &current->block_list_node);
         set_task_block(current);
+        task_yield();
         leave_critical_protection(state);
     }
 }

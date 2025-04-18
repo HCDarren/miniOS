@@ -58,7 +58,7 @@ typedef struct task_struct
     file_t* file_descriptor_table[FILE_DESCRIPTOR_TABLE_COUNT];
     // 取巧的方式放一个 list_node 用于进程管理
     list_node_t list_node;
-    // 用于锁
+    // 用于 bolck
     list_node_t block_list_node;
     // 用于 sleep 等待队列
     list_node_t wait_list_node;

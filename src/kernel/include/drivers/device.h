@@ -38,7 +38,7 @@ typedef struct device
     // 设备控制方法指针
     u32_t (*ioctl)(const u32_t cmd, const void *args, const u32_t flags);
     // 读设备方法指针
-    u32_t (*read)(void* file, const void *buf, const u32_t count);
+    u32_t (*read)(void* file, void *buf, const u32_t count);
     // 写设备方法指针
     u32_t (*write)(const void *buf, const u32_t count);
     // 打开设备方法指针
