@@ -1,7 +1,7 @@
 #include <fs/fat16.h>
 #include <drivers/disk.h>
 #include <printk.h>
-#include <base/string.h>
+#include <lib/include/string.h>
 #include <base/assert.h>
 #include <memory/memory_manager.h>
 

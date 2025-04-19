@@ -1,5 +1,5 @@
 #include <gdt.h>
-#include <base/string.h>
+#include <lib/include/string.h>
 #include <base/assert.h>
 #include <memory/memory_manager.h>
 gdt_descriptor_t gdt_table[GDT_TABLE_SIZE] = {0}; 

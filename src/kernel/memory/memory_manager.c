@@ -1,5 +1,5 @@
 #include <memory/memory_manager.h>
-#include <base/string.h>
+#include <lib/include/string.h>
 #include <base/assert.h>
 #include <base/asm_instruct.h>
 #include <ipc/mutex.h>

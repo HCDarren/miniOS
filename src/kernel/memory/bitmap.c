@@ -1,5 +1,5 @@
 #include "memory/bitmap.h"
-#include <base/string.h>
+#include <lib/include/string.h>
 #include <base/assert.h>
 
 // 位图初始化

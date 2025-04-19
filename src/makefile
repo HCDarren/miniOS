@@ -41,6 +41,7 @@ $(BUILD)/lib/libc.o: $(BUILD)/lib/dirent.o \
 	$(BUILD)/lib/stdio.o \
 	$(BUILD)/lib/syscall.o \
 	$(BUILD)/lib/unistd.o \
+	$(BUILD)/lib/string.o \
 
 	x86_64-elf-ld -m elf_i386 -r $^ -o $@
 
@@ -67,7 +68,7 @@ ${BUILD}/kernel/kernel.bin: ${BUILD}/kernel/kernel.o \
 	${BUILD}/kernel/task/idle_task.o \
 	${BUILD}/kernel/task/init_task.o \
 	${BUILD}/kernel/gdt.o \
-	${BUILD}/kernel/base/string.o \
+	${BUILD}/lib/string.o \
 	${BUILD}/kernel/memory/memory_manager.o \
 	${BUILD}/kernel/memory/bitmap.o \
 	${BUILD}/kernel/base/asm_instruct.o \

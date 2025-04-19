@@ -1,7 +1,7 @@
 #include <drivers/tty.h>
 #include <os.h>
 #include <drivers/device.h>
-#include <base/string.h>
+#include <lib/include/string.h>
 #include <lib/include/sleep.h>
 #include <ipc/semaphore.h>
 

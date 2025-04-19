@@ -1,7 +1,7 @@
 #include <drivers/disk.h>
 #include <drivers/io.h>
 #include <printk.h>
-#include <base/string.h>
+#include <lib/include/string.h>
 #include <drivers/device.h>
 #include <fs/fat16.h>
 #include <base/assert.h>

@@ -2,7 +2,7 @@
 #include <task/idle_task.h>
 #include <task/init_task.h>
 #include <base/assert.h>
-#include <base/string.h>
+#include <lib/include/string.h>
 #include <gdt.h>
 #include <printk.h>
 #include <interrupt.h>

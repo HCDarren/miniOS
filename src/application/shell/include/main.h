@@ -7,10 +7,10 @@
 typedef struct 
 {
     // 命令的名称
-    const char* name;
+    char* name;
     // 命令的执行函数，带有两个参数
     int (*do_execute)(int argc, char** argv);
-} cmd_t;
+} commond_t;
  
 
 #endif

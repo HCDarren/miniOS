@@ -1,7 +1,7 @@
 #include <fs/fs.h>
 #include <fs/file.h>
 #include <task/task.h>
-#include <base/string.h>
+#include <lib/include/string.h>
 #include <drivers/device.h>
 #include <drivers/disk.h>
 

@@ -3,7 +3,7 @@
 #include <drivers/console.h>
 #include <drivers/disk.h>
 #include <drivers/tty.h>
-#include <base/string.h>
+#include <lib/include/string.h>
 #include <fs/fat16.h>
 #include <fs/file.h>
 
@@ -38,7 +38,7 @@ static inline void install_console_device() {
 /************* disk device start ************/
 
 // 读设备方法指针
-static inline u32_t disk_read(void * file, const void *buf, const u32_t count) {
+static inline u32_t disk_read(void * file, void *buf, const u32_t count) {
     return fat16_read((file_t*)file, buf, count);
 }
 

@@ -1,5 +1,5 @@
 #include <elf/elf.h>
-#include <base/string.h>
+#include <lib/include/string.h>
 
 void load_elf32_phdr(void* elf_data, Elf32_Phdr* elf_phdr) {
     u32_t p_offset = elf_phdr->p_offset;
