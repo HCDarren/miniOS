@@ -21,6 +21,7 @@ typedef enum syscall
     sys_opendir,
     sys_closedir,
     sys_readdir,
+    sys_sbrk,
 } syscall_t;
 
 // 三个参数的系统调用

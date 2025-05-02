@@ -3,6 +3,7 @@
 #include <printk.h>
 #include <base/assert.h>
 #include <base/asm_instruct.h>
+#include <task/task.h>
 #include <memory/memory_manager.h>
 
 #define PIC_M_CTRL 0x20 // 主片的控制端口
@@ -35,6 +36,11 @@ extern void interrupt_handler_page_fault();
 void do_interrupt_handler_page_fault(exception_frame_t* exception_frame) {
     // 建立页表映射，输出错误码信息，缺页的地址在寄存器 cr2 中
     void* page_fault_addr = (void*)read_cr2();
+    task_t* task = current_running_task();
+    if (task && task->sbrk != 0 && page_fault_addr > task->sbrk) {
+        // 非法的访问，要发信号给用户进程，然后终止这个进程，没那么多时间没写了
+        return;
+    }
     page_mapping_dir_t * page_dir = (page_mapping_dir_t *)read_cr3();
     // 添加一个物理页作为映射
     void* new_physics_addr = alloc_a_page();
@@ -48,6 +54,8 @@ void do_interrupt_handler_page_fault(exception_frame_t* exception_frame) {
 
 // 一般性保护异常
 void do_interrupt_handler_general_protection(exception_frame_t* exception_frame) {
+    // 0-1G 只允许用户进程访问，elf 某些段用户进程也不能写，这些都会触发一般性保护
+    // 发送一个信号给进程，执行进程信号注册函数，终止进程，没那么多时间没写了
     printk("do_interrupt_handler_general_protection\r\n");
 }
 

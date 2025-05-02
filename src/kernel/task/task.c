@@ -297,16 +297,22 @@ int task_execve(const char* file_name) {
     // 加载 elf 文件头
     Elf32_Ehdr* elf32_ehdr = (Elf32_Ehdr*)elf_data;
     // 可以加一些异常的判断，模式这些，忽略...
-
+    u32_t sbrk = USER_TASK_BASE;
     // 加载程序头
     Elf32_Phdr* elf32_phdr = (Elf32_Phdr*)((u8_t*)elf32_ehdr + elf32_ehdr->e_phoff);
     for (u32_t i = 0; i < elf32_ehdr->e_phnum; i++, elf32_phdr++)
     {
         load_elf32_phdr(elf_data, elf32_phdr);
+        sbrk += elf32_phdr->p_memsz;
     }
     // 释放内核内存
     free_pages(elf_data, alloc_page_cnt);
     void* eip = (void*)elf32_ehdr->e_entry;
+
+    // 设置当前进程用户堆内存的开始位置
+    task_t* task = current_running_task();
+    task->sbrk = sbrk;
+
     // 重新回到用户态去执行
     pre_jmp_to_user_mode(eip);
     return 0;

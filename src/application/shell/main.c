@@ -3,6 +3,7 @@
 #include <lib/include/sleep.h>
 #include <lib/include/stdio.h>
 #include <lib/include/string.h>
+#include <lib/include/malloc.h>
 
 #define SHELL_PROMPT "darrenzeng@DARRENZENG-MB4: "
 

@@ -42,6 +42,7 @@ $(BUILD)/lib/libc.o: $(BUILD)/lib/dirent.o \
 	$(BUILD)/lib/syscall.o \
 	$(BUILD)/lib/unistd.o \
 	$(BUILD)/lib/string.o \
+	$(BUILD)/lib/malloc.o \
 
 	x86_64-elf-ld -m elf_i386 -r $^ -o $@
 

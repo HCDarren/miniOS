@@ -9,4 +9,6 @@ pid_t getpid();
 
 pid_t getppid();
 
+void* sbrk(u32_t);
+
 #endif

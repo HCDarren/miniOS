@@ -56,6 +56,12 @@ static void do_sys_getppid(exception_frame_t* exception_frame){
     exception_frame->eax = current_running_task()->ppid;
 }
 
+static void do_sys_sbrk(exception_frame_t* exception_frame){
+    u32_t sbrk = current_running_task()->sbrk;
+    current_running_task()->sbrk = sbrk + exception_frame->ebx;
+    exception_frame->eax = sbrk;
+}
+
 static void do_sys_sleep(exception_frame_t* exception_frame) {
     task_sleep(exception_frame->ebx);
     exception_frame->eax = 0;
@@ -117,6 +123,7 @@ static inline void init_sys_table() {
     sys_call_table[sys_closedir] = do_sys_closedir;
     sys_call_table[sys_read] = do_sys_read;
     sys_call_table[sys_close] = do_sys_close;
+    sys_call_table[sys_sbrk] = do_sys_sbrk;
 }
 
 void syscall_init() { 

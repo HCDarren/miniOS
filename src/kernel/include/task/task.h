@@ -80,6 +80,8 @@ typedef struct task_struct
     u32_t jiffies;
     // 睡眠结束的时间片
     u32_t sleep_stop_jiffies;
+    // 当前堆内存的开始位置
+    u32_t sbrk;
 } __packed task_t;
 
 // 进程管理
