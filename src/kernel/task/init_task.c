@@ -24,7 +24,7 @@ void real_init_thread()
         // init 进程简单写了，一直睡眠
         while (true)
         {
-           sleep(10000);
+           sleep(1000000);
         }
     }
 }

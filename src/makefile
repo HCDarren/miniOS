@@ -54,11 +54,13 @@ $(BUILD)/%.elf: $(BUILD)/%/main.o \
 
 ${BUILD}/kernel/kernel.bin: ${BUILD}/kernel/kernel.o \
 	${BUILD}/kernel/drivers/io.o \
+	${BUILD}/kernel/drivers/mio.o \
 	${BUILD}/kernel/drivers/console.o \
 	${BUILD}/kernel/drivers/keyborad.o \
 	${BUILD}/kernel/drivers/device.o \
 	${BUILD}/kernel/drivers/disk.o \
 	${BUILD}/kernel/drivers/tty.o \
+	${BUILD}/kernel/drivers/e1000.o \
 	${BUILD}/kernel/printk.o \
 	${BUILD}/kernel/interrupt.o \
 	${BUILD}/kernel/bridge.o \
@@ -135,4 +137,4 @@ QEMU_DISK+= -drive file=slave.img,if=ide,index=1,media=disk,format=raw
 
 .PHONY: qemu
 qemu: slave.img application.app master.img 
-	qemu-system-i386 -s -S -m 32M ${QEMU_DISK} -boot c
+	qemu-system-i386 -s -S -m 32M ${QEMU_DISK} -boot c -netdev user,id=eth0,hostfwd=tcp::2222-:22 -device e1000,netdev=eth0,mac=52:54:00:12:34:56

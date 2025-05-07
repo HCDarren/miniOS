@@ -10,8 +10,7 @@
 #include <base/assert.h>
 #include <base/asm_instruct.h>
 #include <memory/memory_manager.h>
-
-int os_magic = OS_MAGIC;
+#include <drivers/e1000.h>
 
 
 void kernel_init(){
@@ -22,5 +21,6 @@ void kernel_init(){
     keyborad_init();
     syscall_init();
     task_init();
+    net_init();
     time_init();
 }
