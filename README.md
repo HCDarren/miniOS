@@ -8,6 +8,7 @@
 《操作系统导论》  
 《深入理解计算机系统》  
 《TCP/IP详解》  
+《网络是怎样连接的》  
 《程序员的自我修养：链接、装载与库》  
 《Linux是怎样工作的》  
 《操作系统真象还原》  
@@ -31,9 +32,7 @@
 
 ### 视频资料
 [C++ 学习视频(未完结)](https://www.bilibili.com/video/BV1Ga4y1m79j)  
-操作系统视频后续补充...  
-
-### 其他视频
+[手写操作系统](https://www.bilibili.com/video/BV15A5xz7EYK)  
 [一个8位二进制CPU的设计和实现](https://www.bilibili.com/video/BV1aP4y1s7Vf)  
 [x86 汇编语言](https://www.bilibili.com/video/BV1b44y1k7mT)  
 [操作系统实现](https://www.bilibili.com/video/BV1gR4y1u7or)  
